@@ -1,0 +1,15 @@
+{
+  "port": 8080,
+  "aerospikeDS": {
+    "host": "nosql",
+    "port": 3000,
+    "password": "",
+    "setMetadata": {
+      "namespace": "test",
+      "set": "portfolio"
+    }
+  },
+  "loggingConf": {
+    "level": "debug"
+  }
+}

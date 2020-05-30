@@ -1,0 +1,25 @@
+definitions:
+  health.Ping:
+    properties:
+      response:
+        example: hello
+        type: string
+    type: object
+info:
+  contact: {}
+  license: {}
+paths:
+  /health/hello:
+    get:
+      description: Non-authenticated endpoint that returns 200 with hello message. Used to validate that the service is responsive.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/health.Ping'
+      summary: Hello sanity endpoint
+      tags:
+      - health
+swagger: "2.0"

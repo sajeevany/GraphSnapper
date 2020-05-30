@@ -1,0 +1,29 @@
+version: '3.6'
+services:
+  portfolio-service:
+    command: /bin/sh -c "export GIT_COMMIT=$$(git rev-parse HEAD)"
+    build:
+      context: ..
+      dockerfile: ../build/Dockerfile
+      args:
+        CONFIG_FILE: "deploy/graphSnapper-conf_compose.json"
+        GIT_COMMIT: $GIT_COMMIT
+    depends_on:
+      - nosql
+    ports:
+      - "80:8080"
+  nosql:
+    ulimits:
+      nofile: 90000
+    image: "aerospike:4.5.3.6"
+    ports:
+      - "3000:3000"
+      - "3001:3001"
+      - "3002:3002"
+      - "3003:3003"
+    configs:
+      - source: aerospike
+        target: /etc/aerospike/aerospike.conf
+configs:
+  aerospike:
+    file: ./aerospile.conf

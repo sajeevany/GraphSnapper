@@ -1,0 +1,40 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "contact": {},
+        "license": {}
+    },
+    "paths": {
+        "/health/hello": {
+            "get": {
+                "description": "Non-authenticated endpoint that returns 200 with hello message. Used to validate that the service is responsive.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "health"
+                ],
+                "summary": "Hello sanity endpoint",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/health.Ping"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "health.Ping": {
+            "type": "object",
+            "properties": {
+                "response": {
+                    "type": "string",
+                    "example": "hello"
+                }
+            }
+        }
+    }
+}
