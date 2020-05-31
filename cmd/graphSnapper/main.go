@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/sajeevany/DockerizedGolangTemplate/internal/config"
@@ -17,11 +18,15 @@ func main() {
 	//Create a universal logger
 	logger := logging.Init()
 
-	//Read configuration file. Kill startup if an error was found.
-	_, err := config.Read("/app/config/graphSnapper-conf.json", logger)
-	if err != nil{
-		//Log error and use default values returned
-		logger.Fatal(err)
+	//Read configuration file
+	confFP := "/app/config/graphSnapper-conf.json"
+	conf, isValid, invalidArgs := readConf(logger, confFP)
+	if !isValid{
+		if prettyIA, err := json.MarshalIndent(invalidArgs,"", "\t"); err != nil{
+			logger.WithFields(conf.GetFields()).Fatalf("Configuration file <%v> is invalid. Unable to prettyPrint args <%v>. Invalid arguments: <%v>", confFP, err, invalidArgs)
+		}else{
+			logger.WithFields(conf.GetFields()).Fatalf("Configuration file <%v> is invalid. Invalid arguments: <%v>", confFP, prettyIA)
+		}
 	}
 
 	//Initialize router
@@ -36,6 +41,20 @@ func main() {
 		logger.Errorf("An error occurred when starting the router. <%v>", routerErr)
 	}
 
+}
+
+func readConf(logger *logrus.Logger, filepath string) (*config.Conf, bool, map[string]string){
+	//Read configuration file. Kill startup if an error was found.
+	conf, err := config.Read(filepath, logger)
+	if err != nil {
+		//Log error and use default values returned
+		logger.Fatal(err)
+	}
+
+	//validate config.
+	isValid, invalidArgs := conf.IsValid(logger)
+
+	return conf, isValid, invalidArgs
 }
 
 //setupRouter - Create the router and set middleware

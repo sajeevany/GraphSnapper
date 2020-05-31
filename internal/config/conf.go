@@ -6,7 +6,7 @@ type Conf struct {
 	Aerospike AerospikeCfg `json:"aerospike"`
 }
 
-func (c Conf) getFields() logrus.Fields {
+func (c Conf) GetFields() logrus.Fields {
 	return logrus.Fields{
 		"aerospike": c.Aerospike.getFields(),
 	}

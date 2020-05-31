@@ -2,7 +2,7 @@ from golang:latest as builder
 
 WORKDIR /app
 COPY go.mod go.sum ./
-RUN go get github.com/swaggo/swag/cmd/swag
+RUN go get github.com/swaggo/swag/cmd/swag@v1.6.5
 RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -ldflags "-X main.GIT_COMMIT=$GIT_COMMIT -X main.CONFIG_FILE=/app/config/graphSnapper-conf.json" -o main cmd/graphSnapper/main.go
