@@ -17,11 +17,11 @@ func main() {
 	//Create a universal logger
 	logger := logging.Init()
 
-	//Read configuration file
-	conf, err := config.Read("/config/default.json", logger)
+	//Read configuration file. Kill startup if an error was found.
+	_, err := config.Read("/app/config/graphSnapper-conf.json", logger)
 	if err != nil{
 		//Log error and use default values returned
-		logger.Error(err)
+		logger.Fatal(err)
 	}
 
 	//Initialize router
@@ -31,8 +31,7 @@ func main() {
 	setupV1Routes(router, logger)
 
 	//Use default route of 8080.
-	port := fmt.Sprintf(":%d", conf.Port)
-	routerErr := router.Run(port)
+	routerErr := router.Run("8080")
 	if routerErr != nil {
 		logger.Errorf("An error occurred when starting the router. <%v>", routerErr)
 	}
