@@ -6,6 +6,9 @@ import (
 	"net/http"
 )
 
+const HealthGroup = "/health"
+const HelloEndpoint = "/hello"
+
 type Ping struct{
 	Response string `json:"response" required:"true" description:"Server hello response" example:"hello"`
 }

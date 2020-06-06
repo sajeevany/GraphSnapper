@@ -8,6 +8,7 @@ import (
 	"github.com/sajeevany/DockerizedGolangTemplate/internal/health"
 	"github.com/sajeevany/DockerizedGolangTemplate/internal/logging"
 	lm "github.com/sajeevany/DockerizedGolangTemplate/internal/logging/middleware"
+	"github.com/sajeevany/DockerizedGolangTemplate/internal/user"
 	"github.com/sirupsen/logrus"
 )
 
@@ -73,11 +74,19 @@ func setupRouter(logger *logrus.Logger) *gin.Engine {
 
 func setupV1Routes(rtr *gin.Engine, logger *logrus.Logger) {
 	addHealthEndpoints(rtr, logger)
+	addUserEndpoints(rtr,logger)
 }
 
 func addHealthEndpoints(rtr *gin.Engine, logger *logrus.Logger) {
 	v1 := rtr.Group(fmt.Sprintf("%s%s", v1Api, health.HealthGroup))
 	{
 		v1.GET(health.HelloEndpoint, health.Hello(logger))
+	}
+}
+
+func addUserEndpoints(rtr *gin.Engine, logger *logrus.Logger){
+	v1 := rtr.Group(fmt.Sprintf("%s%s", v1Api, user.UserGroup))
+	{
+		v1.POST(user.PostBatchUsers, user.CreateUsers(logger))
 	}
 }
