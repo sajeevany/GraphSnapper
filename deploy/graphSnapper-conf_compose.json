@@ -4,12 +4,9 @@
     "host": "nosql",
     "port": 3000,
     "password": "",
-    "setMetadata": {
-      "namespace": "test",
-      "set": "portfolio"
-    }
+    "graphNamespace": "test"
   },
-  "loggingConf": {
+  "logging": {
     "level": "debug"
   }
 }

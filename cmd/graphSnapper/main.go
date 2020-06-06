@@ -15,8 +15,9 @@ const v1Api = "/api/v1"
 
 func main() {
 
-	//Create a universal logger
+	//Create a universal logger. Set default to debug and update later
 	logger := logging.Init()
+	logger.SetLevel(logrus.DebugLevel)
 
 	//Read configuration file
 	confFP := "/app/config/graphSnapper-conf.json"
