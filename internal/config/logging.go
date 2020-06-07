@@ -2,11 +2,11 @@ package config
 
 import "github.com/sirupsen/logrus"
 
-type Logging struct{
+type Logging struct {
 	Level string `json:"level"`
 }
 
-func (l Logging) GetFields() logrus.Fields{
+func (l Logging) GetFields() logrus.Fields {
 	return logrus.Fields{
 		"level": l.Level,
 	}
@@ -16,7 +16,7 @@ func (l Logging) GetFields() logrus.Fields{
 //Inputs:
 //    currentPath - json path defined up and including this attribute. ie conf.Aero
 //    invalidArgs - map of invalid arguments (currentPath + field name) mapped to invalid reasons
-func (l Logging) IsValid(logger *logrus.Logger, currentPath string, invalidArgs map[string]string) bool{
+func (l Logging) IsValid(logger *logrus.Logger, currentPath string, invalidArgs map[string]string) bool {
 
 	isValid := true
 
@@ -29,7 +29,7 @@ func (l Logging) IsValid(logger *logrus.Logger, currentPath string, invalidArgs 
 	return isValid
 }
 
-func isLoggingLevelInvalid(level string) bool{
+func isLoggingLevelInvalid(level string) bool {
 	_, err := logrus.ParseLevel(level)
 	return err != nil
 }

@@ -10,13 +10,12 @@ type ValidatableConf interface {
 	GetFields() logrus.Fields
 }
 
-
 func AddInvalidArg(currentPath, fieldName, val string, invalidArgs map[string]string) {
 	//Add tag to map of invalid args
 	path := concatTag(currentPath, fieldName)
 	invalidArgs[path] = fmt.Sprintf("<%v> field is using an invalid value <%v>", fieldName, val)
 }
 
-func concatTag(current, tag string) string{
+func concatTag(current, tag string) string {
 	return fmt.Sprintf("%s.%s", current, tag)
 }

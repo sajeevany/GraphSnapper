@@ -9,7 +9,7 @@ import (
 const HealthGroup = "/health"
 const HelloEndpoint = "/hello"
 
-type Ping struct{
+type Ping struct {
 	Response string `json:"response" required:"true" description:"Server hello response" example:"hello"`
 }
 
@@ -19,7 +19,7 @@ type Ping struct{
 //@Success 200 {object} health.Ping
 //@Router /health/hello [get]
 //@Tags health
-func Hello(logger *logrus.Logger) gin.HandlerFunc{
+func Hello(logger *logrus.Logger) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		logger.Println("Hello from within hello")
 

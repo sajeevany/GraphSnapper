@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/sajeevany/DockerizedGolangTemplate/internal/config"
+	"github.com/sajeevany/DockerizedGolangTemplate/internal/db"
 	"github.com/sajeevany/DockerizedGolangTemplate/internal/health"
 	"github.com/sajeevany/DockerizedGolangTemplate/internal/logging"
 	lm "github.com/sajeevany/DockerizedGolangTemplate/internal/logging/middleware"
@@ -23,19 +24,25 @@ func main() {
 	//Read configuration file
 	confFP := "/app/config/graphSnapper-conf.json"
 	conf, isValid, invalidArgs := readConf(logger, confFP)
-	if !isValid{
-		if prettyIA, err := json.MarshalIndent(invalidArgs,"", "\t"); err != nil{
+	if !isValid {
+		if prettyIA, err := json.MarshalIndent(invalidArgs, "", "\t"); err != nil {
 			logger.WithFields(conf.GetFields()).Fatalf("Configuration file <%v> is invalid. Unable to prettyPrint args <%v>. Invalid arguments: <%v>", confFP, err, invalidArgs)
-		}else{
+		} else {
 			logger.WithFields(conf.GetFields()).Fatalf("Configuration file <%v> is invalid. Invalid arguments: <%v>", confFP, prettyIA)
 		}
+	}
+
+	//Get aerospike client
+	aeroClient, err := db.New(logger, conf.Aerospike)
+	if err != nil {
+		logger.WithFields(conf.Aerospike.GetFields()).Fatalf("Failed to create Aerospike client using client. Error : <%v>", err)
 	}
 
 	//Initialize router
 	router := setupRouter(logger)
 
 	//Setup routes
-	setupV1Routes(router, logger)
+	setupV1Routes(router, logger, aeroClient)
 
 	//Use default route of 8080.
 	routerErr := router.Run("8080")
@@ -45,7 +52,7 @@ func main() {
 
 }
 
-func readConf(logger *logrus.Logger, filepath string) (*config.Conf, bool, map[string]string){
+func readConf(logger *logrus.Logger, filepath string) (*config.Conf, bool, map[string]string) {
 	//Read configuration file. Kill startup if an error was found.
 	conf, err := config.Read(filepath, logger)
 	if err != nil {
@@ -72,9 +79,9 @@ func setupRouter(logger *logrus.Logger) *gin.Engine {
 	return engine
 }
 
-func setupV1Routes(rtr *gin.Engine, logger *logrus.Logger) {
+func setupV1Routes(rtr *gin.Engine, logger *logrus.Logger, aeroClient *db.ASClient) {
 	addHealthEndpoints(rtr, logger)
-	addUserEndpoints(rtr,logger)
+	addUserEndpoints(rtr, logger, aeroClient)
 }
 
 func addHealthEndpoints(rtr *gin.Engine, logger *logrus.Logger) {
@@ -84,9 +91,9 @@ func addHealthEndpoints(rtr *gin.Engine, logger *logrus.Logger) {
 	}
 }
 
-func addUserEndpoints(rtr *gin.Engine, logger *logrus.Logger){
+func addUserEndpoints(rtr *gin.Engine, logger *logrus.Logger, aeroClient *db.ASClient) {
 	v1 := rtr.Group(fmt.Sprintf("%s%s", v1Api, user.UserGroup))
 	{
-		v1.POST(user.PostBatchUsers, user.CreateUsers(logger))
+		v1.POST(user.PostBatchUsers, user.CreateUsers(logger, aeroClient))
 	}
 }

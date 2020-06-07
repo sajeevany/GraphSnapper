@@ -17,14 +17,14 @@ func Read(conf string, logger *logrus.Logger) (*Conf, error) {
 
 		//Read file contents
 		data, err := ioutil.ReadFile(conf)
-		if err != nil{
+		if err != nil {
 			logger.Errorf("Error reading configuration file <%v>. Encountered error <%v>", conf, err)
 			return nil, err
 		}
 
 		//Unmarshal data as json
 		var cStruct Conf
-		if convErr := json.Unmarshal(data, &cStruct); convErr != nil{
+		if convErr := json.Unmarshal(data, &cStruct); convErr != nil {
 			logger.Errorf("Error unmarshalling configuration file <%v>. Encountered error <%v>.", conf, convErr)
 			return nil, convErr
 		}
@@ -35,7 +35,7 @@ func Read(conf string, logger *logrus.Logger) (*Conf, error) {
 		//file doesn't exist
 		logger.Errorf("Configuration file <%v> does not exist. Using defaults.  Encountered error <%v>", conf, err)
 		return nil, err
-	} else{
+	} else {
 		logger.Errorf("Error <%v> while evaluating if config file <%v> exists.", err, conf)
 		return nil, err
 	}

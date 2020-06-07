@@ -4,7 +4,7 @@ import "github.com/sirupsen/logrus"
 
 type Conf struct {
 	Aerospike AerospikeCfg `json:"aerospike"`
-	Logging Logging `json:"logging"`
+	Logging   Logging      `json:"logging"`
 }
 
 func (c Conf) GetFields() logrus.Fields {
@@ -14,7 +14,7 @@ func (c Conf) GetFields() logrus.Fields {
 }
 
 //IsValid - Returns true/false and a non-empty map of all invalid args. Nested args are set in the form of Parent.Child.SubChild
-func (c Conf) IsValid(logger *logrus.Logger) (bool, map[string]string){
+func (c Conf) IsValid(logger *logrus.Logger) (bool, map[string]string) {
 
 	var invalidArgs = make(map[string]string)
 

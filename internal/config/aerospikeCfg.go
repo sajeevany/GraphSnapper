@@ -6,10 +6,11 @@ import (
 )
 
 type AerospikeCfg struct {
-	Host           string `json:"host"`
-	Port           int    `json:"port"`
-	Password       string `json:"password"`
-	GraphNamespace string `json:"graphNamespace"`
+	Host              string `json:"host"`
+	Port              int    `json:"port"`
+	Password          string `json:"password"`
+	GraphNamespace    string `json:"graphNamespace"`
+	DocumentNamespace string `json:documentNamespace`
 }
 
 func (as AerospikeCfg) GetFields() logrus.Fields {
@@ -25,7 +26,7 @@ func (as AerospikeCfg) GetFields() logrus.Fields {
 //Inputs:
 //    currentPath - json path defined up and including this attribute. ie conf.Aero
 //    invalidArgs - map of invalid arguments mapped to their invalid reasons
-func (as AerospikeCfg) IsValid(logger *logrus.Logger, currentPath string, invalidArgs map[string]string) bool{
+func (as AerospikeCfg) IsValid(logger *logrus.Logger, currentPath string, invalidArgs map[string]string) bool {
 
 	isValid := true
 
@@ -35,18 +36,23 @@ func (as AerospikeCfg) IsValid(logger *logrus.Logger, currentPath string, invali
 		isValid = false
 	}
 
-	if as.Port <= 0 || as.Port > 65535{
-		AddInvalidArg( currentPath, "Port", strconv.Itoa(as.Port), invalidArgs)
+	if as.Port <= 0 || as.Port > 65535 {
+		AddInvalidArg(currentPath, "Port", strconv.Itoa(as.Port), invalidArgs)
 		isValid = false
 	}
 
-	if as.Password == ""{
+	if as.Password == "" {
 		AddInvalidArg(currentPath, "Password", as.Password, invalidArgs)
 		isValid = false
 	}
 
-	if as.GraphNamespace == ""{
+	if as.GraphNamespace == "" {
 		AddInvalidArg(currentPath, "GraphNamespace", as.GraphNamespace, invalidArgs)
+		isValid = false
+	}
+
+	if as.DocumentNamespace == "" {
+		AddInvalidArg(currentPath, "DocumentNamespace", as.DocumentNamespace, invalidArgs)
 		isValid = false
 	}
 
