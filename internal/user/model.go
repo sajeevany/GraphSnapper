@@ -1,6 +1,9 @@
 package user
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/sirupsen/logrus"
+)
 
 type AddUsersModel struct {
 	GrafanaUsers []GrafanaUser
@@ -22,6 +25,20 @@ func (am AddUsersModel) IsValid() error {
 	}
 
 	return nil
+}
+
+func (l AddUsersModel) GetFields() logrus.Fields {
+
+	var fields logrus.Fields
+
+	//Get grafana user info as fields
+	grafanaUserMap := make(map[string]string)
+	for _, v := range l.GrafanaUsers {
+		grafanaUserMap[v.APIKey]= v.Description
+	}
+	fields["GrafanaUsers"] = grafanaUserMap
+
+	return fields
 }
 
 type GrafanaUser struct {

@@ -37,10 +37,15 @@ func CreateUsers(logger *logrus.Logger, aeroClient *db.ASClient) gin.HandlerFunc
 		}
 
 		//Verify user connectivity
+		if vErr := validateUserConnectivity(logger, aeroClient, addUsers); vErr != nil {
+			logger.WithFields(addUsers.GetFields()).Errorf("Connectivity and credential validation failed")
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": vErr.Error()})
+			return
+		}
 
 		//Store user data and return series of keys if no errors are found
 		storedUsers, sErr := storeUsers(logger, aeroClient, addUsers)
-		if sErr != nil{
+		if sErr != nil {
 			logger.Error("Unable to store users in aerospike", sErr)
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": sErr.Error()})
 			return
@@ -51,12 +56,15 @@ func CreateUsers(logger *logrus.Logger, aeroClient *db.ASClient) gin.HandlerFunc
 	}
 }
 
+func validateUserConnectivity(logger *logrus.Logger, aeroClient *db.ASClient, addUsersMdl AddUsersModel) error {
+	return nil
+}
+
 func storeUsers(logger *logrus.Logger, aeroClient *db.ASClient, addUsersMdl AddUsersModel) (StoredUsers, error) {
 
 	storedUsers := StoredUsers{
 		GrafanaUsers: []GrafanaDbUser{},
 	}
-
 
 	return storedUsers, nil
 }
