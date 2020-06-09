@@ -1,4 +1,4 @@
-package credentials
+package storage
 
 //Record - Aerospike configuration + credentials data
 type Record struct {

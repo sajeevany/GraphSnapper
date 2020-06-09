@@ -30,6 +30,25 @@ info:
   title: Graph Snapper API
   version: "1.0"
 paths:
+  /account/{id}:
+    put:
+      description: Non-authenticated endpoint creates an empty record at the specified key. Overwrites any record that already exists
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+      summary: Create account record
+      tags:
+      - account
   /credentials/{accountId}/batch:
     post:
       description: Non-authenticated endpoint which stores the provided credentials credentials owned by a specified account. Verifies connectivity before storing in Aerospike

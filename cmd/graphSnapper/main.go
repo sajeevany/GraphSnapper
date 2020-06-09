@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/sajeevany/DockerizedGolangTemplate/internal/account"
 	"github.com/sajeevany/DockerizedGolangTemplate/internal/config"
 	"github.com/sajeevany/DockerizedGolangTemplate/internal/db"
 	"github.com/sajeevany/DockerizedGolangTemplate/internal/health"
@@ -87,6 +88,7 @@ func setupRouter(logger *logrus.Logger) *gin.Engine {
 
 func setupV1Routes(rtr *gin.Engine, logger *logrus.Logger, aeroClient *db.ASClient) {
 	addHealthEndpoints(rtr, logger)
+	addAccountEndpoints(rtr, logger, aeroClient)
 	addCredentialsEndpoints(rtr, logger, aeroClient)
 }
 
@@ -94,6 +96,13 @@ func addHealthEndpoints(rtr *gin.Engine, logger *logrus.Logger) {
 	v1 := rtr.Group(fmt.Sprintf("%s%s", v1Api, health.HealthGroup))
 	{
 		v1.GET(health.HelloEndpoint, health.Hello(logger))
+	}
+}
+
+func addAccountEndpoints(rtr *gin.Engine, logger *logrus.Logger, aeroClient *db.ASClient) {
+	v1 := rtr.Group(fmt.Sprintf("%s%s", v1Api, account.AccountGroup))
+	{
+		v1.PUT(account.PutAccountEndpoint, account.AddAccount(logger, aeroClient))
 	}
 }
 

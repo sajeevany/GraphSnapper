@@ -11,6 +11,35 @@
     },
     "basePath": "/api/v1",
     "paths": {
+        "/account/{id}": {
+            "put": {
+                "description": "Non-authenticated endpoint creates an empty record at the specified key. Overwrites any record that already exists",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "account"
+                ],
+                "summary": "Create account record",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/credentials/{accountId}/batch": {
             "post": {
                 "description": "Non-authenticated endpoint which stores the provided credentials credentials owned by a specified account. Verifies connectivity before storing in Aerospike",
