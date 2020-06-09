@@ -1,4 +1,4 @@
-package user
+package credentials
 
 import (
 	"fmt"
@@ -17,10 +17,10 @@ func (am AddUsersModel) IsValid() error {
 		return fmt.Errorf("GrafanaUsers array is empty")
 	}
 
-	//Validate grafana user
+	//Validate grafana credentials
 	for _, user := range am.GrafanaUsers {
 		if !user.isValid() {
-			return fmt.Errorf("invalid grafana user provided key <%v> desc <%v>", user.APIKey, user.Description)
+			return fmt.Errorf("invalid grafana credentials provided key <%v> desc <%v>", user.APIKey, user.Description)
 		}
 	}
 
@@ -31,10 +31,10 @@ func (l AddUsersModel) GetFields() logrus.Fields {
 
 	var fields logrus.Fields
 
-	//Get grafana user info as fields
+	//Get grafana credentials info as fields
 	grafanaUserMap := make(map[string]string)
 	for _, v := range l.GrafanaUsers {
-		grafanaUserMap[v.APIKey]= v.Description
+		grafanaUserMap[v.APIKey] = v.Description
 	}
 	fields["GrafanaUsers"] = grafanaUserMap
 

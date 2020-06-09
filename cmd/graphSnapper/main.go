@@ -9,12 +9,18 @@ import (
 	"github.com/sajeevany/DockerizedGolangTemplate/internal/health"
 	"github.com/sajeevany/DockerizedGolangTemplate/internal/logging"
 	lm "github.com/sajeevany/DockerizedGolangTemplate/internal/logging/middleware"
-	"github.com/sajeevany/DockerizedGolangTemplate/internal/user"
+	"github.com/sajeevany/DockerizedGolangTemplate/internal/credentials"
 	"github.com/sirupsen/logrus"
 )
 
 const v1Api = "/api/v1"
 
+
+// @title Graph Snapper API
+// @version 1.0
+// @description Takes and updates snapshots from a graph service to a document store
+// @license.name MIT License
+// @BasePath /api/v1
 func main() {
 
 	//Create a universal logger. Set default to debug and update later
@@ -81,7 +87,7 @@ func setupRouter(logger *logrus.Logger) *gin.Engine {
 
 func setupV1Routes(rtr *gin.Engine, logger *logrus.Logger, aeroClient *db.ASClient) {
 	addHealthEndpoints(rtr, logger)
-	addUserEndpoints(rtr, logger, aeroClient)
+	addCredentialsEndpoints(rtr, logger, aeroClient)
 }
 
 func addHealthEndpoints(rtr *gin.Engine, logger *logrus.Logger) {
@@ -91,9 +97,9 @@ func addHealthEndpoints(rtr *gin.Engine, logger *logrus.Logger) {
 	}
 }
 
-func addUserEndpoints(rtr *gin.Engine, logger *logrus.Logger, aeroClient *db.ASClient) {
-	v1 := rtr.Group(fmt.Sprintf("%s%s", v1Api, user.UserGroup))
+func addCredentialsEndpoints(rtr *gin.Engine, logger *logrus.Logger, aeroClient *db.ASClient) {
+	v1 := rtr.Group(fmt.Sprintf("%s%s", v1Api, credentials.CredGroup))
 	{
-		v1.POST(user.PostBatchUsers, user.CreateUsers(logger, aeroClient))
+		v1.POST(credentials.PostCredBatch, credentials.AddCredentials(logger, aeroClient))
 	}
 }

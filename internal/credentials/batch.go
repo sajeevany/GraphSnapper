@@ -1,4 +1,4 @@
-package user
+package credentials
 
 import (
 	"fmt"
@@ -8,17 +8,27 @@ import (
 	"net/http"
 )
 
-const UserGroup = "/user"
-const PostBatchUsers = "/batch"
+const CredGroup = "/credentials"
+const PostCredBatch = "/batch"
 
 //@Summary Create users endpoint
-//@Description Non-authenticated endpoint which stores the provided user. Verifies connectivity before storing into Aerospike
+//@Description Non-authenticated endpoint which stores the provided credentials credentials owned by a specified account. Verifies connectivity before storing in Aerospike
 //@Produce json
+//@Param accountId path string true "Account ID"
 //@Success 200 {object} StoredUsers
-//@Router /user [post]
-//@Tags user
-func CreateUsers(logger *logrus.Logger, aeroClient *db.ASClient) gin.HandlerFunc {
+//@Router /credentials/{accountId}/batch [post]
+//@Tags credentials
+func AddCredentials(logger *logrus.Logger, aeroClient *db.ASClient) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+
+		//Validate that id parameter has been set
+		accountId := ctx.Param("accountId")
+		if accountId == "" {
+			msg := fmt.Sprintf("Query parameter %v hasn't been set", "accountId")
+			logger.Debug(msg)
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": msg})
+			return
+		}
 
 		//Bind body to add users object
 		var addUsers AddUsersModel
@@ -36,14 +46,14 @@ func CreateUsers(logger *logrus.Logger, aeroClient *db.ASClient) gin.HandlerFunc
 			return
 		}
 
-		//Verify user connectivity
+		//Verify credentials connectivity
 		if vErr := validateUserConnectivity(logger, aeroClient, addUsers); vErr != nil {
 			logger.WithFields(addUsers.GetFields()).Errorf("Connectivity and credential validation failed")
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": vErr.Error()})
 			return
 		}
 
-		//Store user data and return series of keys if no errors are found
+		//Store credentials data and return series of keys if no errors are found
 		storedUsers, sErr := storeUsers(logger, aeroClient, addUsers)
 		if sErr != nil {
 			logger.Error("Unable to store users in aerospike", sErr)

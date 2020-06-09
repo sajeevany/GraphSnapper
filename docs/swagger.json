@@ -1,10 +1,45 @@
 {
     "swagger": "2.0",
     "info": {
+        "description": "Takes and updates snapshots from a graph service to a document store",
+        "title": "Graph Snapper API",
         "contact": {},
-        "license": {}
+        "license": {
+            "name": "MIT License"
+        },
+        "version": "1.0"
     },
+    "basePath": "/api/v1",
     "paths": {
+        "/credentials/{accountId}/batch": {
+            "post": {
+                "description": "Non-authenticated endpoint which stores the provided credentials credentials owned by a specified account. Verifies connectivity before storing in Aerospike",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "credentials"
+                ],
+                "summary": "Create users endpoint",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Account ID",
+                        "name": "accountId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/credentials.StoredUsers"
+                        }
+                    }
+                }
+            }
+        },
         "/health/hello": {
             "get": {
                 "description": "Non-authenticated endpoint that returns 200 with hello message. Used to validate that the service is responsive.",
@@ -27,6 +62,31 @@
         }
     },
     "definitions": {
+        "credentials.GrafanaDbUser": {
+            "type": "object",
+            "properties": {
+                "apikey": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "key": {
+                    "type": "string"
+                }
+            }
+        },
+        "credentials.StoredUsers": {
+            "type": "object",
+            "properties": {
+                "grafanaUsers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/credentials.GrafanaDbUser"
+                    }
+                }
+            }
+        },
         "health.Ping": {
             "type": "object",
             "properties": {
