@@ -6,16 +6,15 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sajeevany/DockerizedGolangTemplate/internal/account"
 	"github.com/sajeevany/DockerizedGolangTemplate/internal/config"
+	"github.com/sajeevany/DockerizedGolangTemplate/internal/credentials"
 	"github.com/sajeevany/DockerizedGolangTemplate/internal/db"
 	"github.com/sajeevany/DockerizedGolangTemplate/internal/health"
 	"github.com/sajeevany/DockerizedGolangTemplate/internal/logging"
 	lm "github.com/sajeevany/DockerizedGolangTemplate/internal/logging/middleware"
-	"github.com/sajeevany/DockerizedGolangTemplate/internal/credentials"
 	"github.com/sirupsen/logrus"
 )
 
 const v1Api = "/api/v1"
-
 
 // @title Graph Snapper API
 // @version 1.0
@@ -102,7 +101,7 @@ func addHealthEndpoints(rtr *gin.Engine, logger *logrus.Logger) {
 func addAccountEndpoints(rtr *gin.Engine, logger *logrus.Logger, aeroClient *db.ASClient) {
 	v1 := rtr.Group(fmt.Sprintf("%s%s", v1Api, account.AccountGroup))
 	{
-		v1.PUT(account.PutAccountEndpoint, account.AddAccount(logger, aeroClient))
+		v1.PUT(account.PutAccountEndpoint, account.PutAccountV1(logger, aeroClient))
 	}
 }
 
