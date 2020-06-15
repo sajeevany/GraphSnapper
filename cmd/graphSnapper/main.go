@@ -4,13 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/sajeevany/DockerizedGolangTemplate/internal/account"
-	"github.com/sajeevany/DockerizedGolangTemplate/internal/config"
-	"github.com/sajeevany/DockerizedGolangTemplate/internal/credentials"
-	"github.com/sajeevany/DockerizedGolangTemplate/internal/db"
-	"github.com/sajeevany/DockerizedGolangTemplate/internal/health"
-	"github.com/sajeevany/DockerizedGolangTemplate/internal/logging"
-	lm "github.com/sajeevany/DockerizedGolangTemplate/internal/logging/middleware"
+	v12 "github.com/sajeevany/graphSnapper/internal/account/v1"
+	"github.com/sajeevany/graphSnapper/internal/config"
+	"github.com/sajeevany/graphSnapper/internal/credentials"
+	"github.com/sajeevany/graphSnapper/internal/db"
+	"github.com/sajeevany/graphSnapper/internal/health"
+	"github.com/sajeevany/graphSnapper/internal/logging"
 	"github.com/sirupsen/logrus"
 )
 
@@ -99,9 +98,9 @@ func addHealthEndpoints(rtr *gin.Engine, logger *logrus.Logger) {
 }
 
 func addAccountEndpoints(rtr *gin.Engine, logger *logrus.Logger, aeroClient *db.ASClient) {
-	v1 := rtr.Group(fmt.Sprintf("%s%s", v1Api, account.AccountGroup))
+	v1 := rtr.Group(fmt.Sprintf("%s%s", v1Api, v12.AccountGroup))
 	{
-		v1.PUT(account.PutAccountEndpoint, account.PutAccountV1(logger, aeroClient))
+		v1.PUT(v12.PutAccountEndpoint, v12.PutAccountV1(logger, aeroClient))
 	}
 }
 

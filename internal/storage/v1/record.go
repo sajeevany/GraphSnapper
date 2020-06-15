@@ -1,7 +1,8 @@
 package v1
 
 import (
-	accountv1 "github.com/sajeevany/DockerizedGolangTemplate/internal/account/v1"
+	"github.com/aerospike/aerospike-client-go"
+	accountv1 "github.com/sajeevany/graphSnapper/internal/account/v1"
 	"github.com/sirupsen/logrus"
 )
 
@@ -113,4 +114,49 @@ func (r RecordV1) GetFields() logrus.Fields {
 		"Account":     r.Account.GetFields(),
 		"Credentials": r.Credentials.GetFields(),
 	}
+}
+
+func (r RecordV1) ToASBinSlice() []*aerospike.Bin {
+	return []*aerospike.Bin{
+		r.Metadata.getMetadataBin(),
+		r.Account.getAccountBin(),
+		r.Credentials.getCredentialBin(),
+	}
+}
+
+func (m Metadata) getMetadataBin() *aerospike.Bin {
+	return aerospike.NewBin(
+		"Metadata",
+		map[string]string{
+			"PrimaryKey": m.PrimaryKey,
+			"LastUpdate": m.LastUpdate,
+			"CreateTime": m.CreateTime,
+		})
+}
+
+func (a Account) getAccountBin() *aerospike.Bin {
+	return aerospike.NewBin(
+		"Account",
+		map[string]string{
+			"Email": a.Email,
+			"Alias": a.Alias,
+		})
+}
+
+func (c Credentials) getCredentialBin() *aerospike.Bin {
+
+	//Create grafana users bin map
+	grafanaUsersBinMap := make(map[string]interface{})
+	for i, v := range c.GrafanaUsers {
+		grafanaUsersBinMap[i] = map[string]string{
+			"APIKey":      v.APIKey,
+			"Description": v.Description,
+		}
+	}
+
+	return aerospike.NewBin(
+		"Credentials",
+		map[string]interface{}{
+			"GrafanaUsers": grafanaUsersBinMap,
+		})
 }

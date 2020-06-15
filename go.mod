@@ -1,4 +1,4 @@
-module github.com/sajeevany/DockerizedGolangTemplate
+module github.com/sajeevany/graphSnapper
 
 go 1.13
 

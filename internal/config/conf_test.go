@@ -32,21 +32,19 @@ func TestAerospikePortfolioConfig_AddInvalidArg(t *testing.T) {
 
 				ok: false,
 				invalidArgs: map[string]string{
-					"conf.aerospike.Host":              fmt.Sprintf("<%v> field is using an invalid value <%v>", "Host", ""),
-					"conf.aerospike.Password":          fmt.Sprintf("<%v> field is using an invalid value <%v>", "Password", ""),
-					"conf.aerospike.Port":              fmt.Sprintf("<%v> field is using an invalid value <%v>", "Port", "0"),
-					"conf.aerospike.GraphNamespace":    fmt.Sprintf("<%v> field is using an invalid value <%v>", "GraphNamespace", ""),
-					"conf.aerospike.DocumentNamespace": fmt.Sprintf("<%v> field is using an invalid value <%v>", "DocumentNamespace", ""),
+					"conf.aerospike.Host":             fmt.Sprintf("<%v> field is using an invalid value <%v>", "Host", ""),
+					"conf.aerospike.Password":         fmt.Sprintf("<%v> field is using an invalid value <%v>", "Password", ""),
+					"conf.aerospike.Port":             fmt.Sprintf("<%v> field is using an invalid value <%v>", "Port", "0"),
+					"conf.aerospike.AccountNamespace": fmt.Sprintf("<%v> field is using an invalid value <%v>", "AccountNamespace", ""),
 				},
 			},
 			setup: setup{
 				jsonPath: "conf.aerospike",
 				asConf: AerospikeCfg{
-					Host:              "", // Cannot be empty
-					Port:              0,  // Cannot be zero
-					Password:          "", // Cannot be empty
-					GraphNamespace:    "", // Cannot be empty
-					DocumentNamespace: "", // Cannot be empty
+					Host:             "", // Cannot be empty
+					Port:             0,  // Cannot be zero
+					Password:         "", // Cannot be empty
+					AccountNamespace: "", // Cannot be empty
 				},
 			},
 		},

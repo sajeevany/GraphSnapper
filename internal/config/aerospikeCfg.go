@@ -6,11 +6,10 @@ import (
 )
 
 type AerospikeCfg struct {
-	Host              string `json:"host"`
-	Port              int    `json:"port"`
-	Password          string `json:"password"`
-	GraphNamespace    string `json:"graphNamespace"`
-	DocumentNamespace string `json:documentNamespace`
+	Host             string `json:"host"`
+	Port             int    `json:"port"`
+	Password         string `json:"password"`
+	AccountNamespace string `json:"accountNamespace"`
 }
 
 func (as AerospikeCfg) GetFields() logrus.Fields {
@@ -18,7 +17,7 @@ func (as AerospikeCfg) GetFields() logrus.Fields {
 		"host":           as.Host,
 		"port":           as.Port,
 		"password":       as.Password,
-		"graphNamespace": as.GraphNamespace,
+		"graphNamespace": as.AccountNamespace,
 	}
 }
 
@@ -46,13 +45,8 @@ func (as AerospikeCfg) IsValid(logger *logrus.Logger, currentPath string, invali
 		isValid = false
 	}
 
-	if as.GraphNamespace == "" {
-		AddInvalidArg(currentPath, "GraphNamespace", as.GraphNamespace, invalidArgs)
-		isValid = false
-	}
-
-	if as.DocumentNamespace == "" {
-		AddInvalidArg(currentPath, "DocumentNamespace", as.DocumentNamespace, invalidArgs)
+	if as.AccountNamespace == "" {
+		AddInvalidArg(currentPath, "AccountNamespace", as.AccountNamespace, invalidArgs)
 		isValid = false
 	}
 

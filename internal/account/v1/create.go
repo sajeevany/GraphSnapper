@@ -1,13 +1,13 @@
-package account
+package v1
 
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	accountv1 "github.com/sajeevany/DockerizedGolangTemplate/internal/account/v1"
-	"github.com/sajeevany/DockerizedGolangTemplate/internal/db"
-	v1 "github.com/sajeevany/DockerizedGolangTemplate/internal/storage/v1"
+	"github.com/sajeevany/graphSnapper/internal/db"
+	v1 "github.com/sajeevany/graphSnapper/internal/storage/v1"
 	"github.com/sirupsen/logrus"
 	"net/http"
+	"time"
 )
 
 const AccountGroup = "/account"
@@ -35,7 +35,7 @@ func PutAccountV1(logger *logrus.Logger, aeroClient *db.ASClient) gin.HandlerFun
 		}
 
 		//Bind account object
-		var account accountv1.AccountView1
+		var account AccountView1
 		if bErr := ctx.BindJSON(&account); bErr != nil {
 			msg := fmt.Sprintf("Unable to bind request body to account object %v", bErr)
 			logger.Errorf(msg)
@@ -68,11 +68,31 @@ func PutAccountV1(logger *logrus.Logger, aeroClient *db.ASClient) gin.HandlerFun
 }
 
 //assumes valid account
-func createAccount(logger *logrus.Logger, aeroClient *db.ASClient, key string, account accountv1.AccountView1) (*v1.RecordV1, error) {
+func createAccount(logger *logrus.Logger, aeroClient *db.ASClient, key string, account AccountView1) (*v1.RecordV1, error) {
 
 	logger.Debug("Creating account record")
 
-	//
+	//Get record as known to aerospikeWriter
+	record := newAccountRecord(key, account)
+
+
+
 
 	return nil, nil
+}
+
+func newAccountRecord(key string, account AccountView1) v1.RecordV1{
+	now := time.Now().UTC().String()
+	return v1.RecordV1{
+		Metadata:    v1.Metadata{
+			PrimaryKey: key,
+			LastUpdate: now,
+			CreateTime: now,
+		},
+		Account:     v1.Account{
+			Email: account.Email,
+			Alias: account.Alias,
+		},
+		Credentials: v1.Credentials{},
+	}
 }

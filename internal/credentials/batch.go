@@ -3,7 +3,7 @@ package credentials
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/sajeevany/DockerizedGolangTemplate/internal/db"
+	"github.com/sajeevany/graphSnapper/internal/db"
 	"github.com/sirupsen/logrus"
 	"net/http"
 )
