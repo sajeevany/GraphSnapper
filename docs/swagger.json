@@ -28,6 +28,15 @@
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "Create account",
+                        "name": "account",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/v1.Account"
+                        }
                     }
                 ],
                 "responses": {
@@ -122,6 +131,17 @@
                 "response": {
                     "type": "string",
                     "example": "hello"
+                }
+            }
+        },
+        "v1.Account": {
+            "type": "object",
+            "properties": {
+                "alias": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
                 }
             }
         }

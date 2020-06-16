@@ -1,16 +1,17 @@
-package v1
+package account
 
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/sajeevany/graphSnapper/internal/aerospike"
+	"github.com/sajeevany/graphSnapper/internal/aerospike/v1"
 	"github.com/sajeevany/graphSnapper/internal/db"
-	v1 "github.com/sajeevany/graphSnapper/internal/storage/v1"
 	"github.com/sirupsen/logrus"
 	"net/http"
 	"time"
 )
 
-const AccountGroup = "/account"
+const Group = "/account"
 const PutAccountEndpoint = "/{id}"
 
 //@Summary Create account record
@@ -35,7 +36,7 @@ func PutAccountV1(logger *logrus.Logger, aeroClient *db.ASClient) gin.HandlerFun
 		}
 
 		//Bind account object
-		var account AccountView1
+		var account v1.AccountView1
 		if bErr := ctx.BindJSON(&account); bErr != nil {
 			msg := fmt.Sprintf("Unable to bind request body to account object %v", bErr)
 			logger.Errorf(msg)
@@ -68,28 +69,32 @@ func PutAccountV1(logger *logrus.Logger, aeroClient *db.ASClient) gin.HandlerFun
 }
 
 //assumes valid account
-func createAccount(logger *logrus.Logger, aeroClient *db.ASClient, key string, account AccountView1) (*v1.RecordV1, error) {
+func createAccount(logger *logrus.Logger, aeroClient *db.ASClient, key string, account v1.AccountView1) (v1.RecordV1, error) {
 
 	logger.Debug("Creating account record")
 
 	//Get record as known to aerospikeWriter
 	record := newAccountRecord(key, account)
 
+	aeroWriter := aerospike.NewAerospikeWriter(logger, aeroClient)
+	if wErr := aeroWriter.WriteRecord(key, record); wErr != nil {
+		hErr := fmt.Sprintf("Unable to write record with key <%v>", key)
+		logger.WithFields(record.GetFields()).Error(hErr)
+		return v1.RecordV1{}, wErr
+	}
 
-
-
-	return nil, nil
+	return record, nil
 }
 
-func newAccountRecord(key string, account AccountView1) v1.RecordV1{
+func newAccountRecord(key string, account v1.AccountView1) v1.RecordV1 {
 	now := time.Now().UTC().String()
 	return v1.RecordV1{
-		Metadata:    v1.Metadata{
+		Metadata: v1.Metadata{
 			PrimaryKey: key,
 			LastUpdate: now,
 			CreateTime: now,
 		},
-		Account:     v1.Account{
+		Account: v1.Account{
 			Email: account.Email,
 			Alias: account.Alias,
 		},

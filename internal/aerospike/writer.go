@@ -1,31 +1,30 @@
-package storage
+package aerospike
 
 import (
 	"fmt"
 	"github.com/aerospike/aerospike-client-go"
 	"github.com/sajeevany/graphSnapper/internal/db"
-	v1 "github.com/sajeevany/graphSnapper/internal/storage/v1"
 	"github.com/sirupsen/logrus"
 )
 
 type DbWriter interface {
-	WriterRecord(key string, record v1.RecordV1) error
+	WriteRecord(key string, record db.Record) error
 }
 
 func NewAerospikeWriter(logger *logrus.Logger, asClient *db.ASClient) DbWriter {
-	return &AerospikeWriter{
+	return &Writer{
 		logger:   logger,
 		asClient: asClient,
 	}
 }
 
-type AerospikeWriter struct {
+type Writer struct {
 	logger   *logrus.Logger
 	asClient *db.ASClient
 }
 
 //Writes record with specified key in the account namespace under the account set. Returns error if one is found
-func (a *AerospikeWriter) WriterRecord(key string, record v1.RecordV1) error {
+func (a *Writer) WriteRecord(key string, record db.Record) error {
 
 	a.logger.WithFields(record.GetFields()).Debug("Starting record create")
 

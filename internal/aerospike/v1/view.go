@@ -7,16 +7,16 @@ import (
 
 //RecordViewV1 - Aerospike configuration + credentials data
 type RecordViewV1 struct {
-	Metadata    MetadataView1
-	Account     AccountView1
-	Credentials CredentialsView1
+	Metadata    MetadataView1    `json:"Metadata"`
+	Account     AccountView1     `json:"Account"`
+	Credentials CredentialsView1 `json:"Credentials"`
 }
 
 //Metadata - Record metadata
 type MetadataView1 struct {
-	PrimaryKey string
-	LastUpdate string
-	CreateTime string
+	PrimaryKey    string `json:"PrimaryKey"`
+	LastUpdate    string `json:"LastUpdate"`
+	CreateTimeUTC string `json:"CreateTimeUTC"`
 }
 
 //Account - Creation account details
@@ -27,12 +27,12 @@ type AccountView1 struct {
 
 //Credentials - Credentials for various graph and storage services
 type CredentialsView1 struct {
-	GrafanaUsers map[string]GrafanaUser
+	GrafanaUsers map[string]GrafanaUser `json:"GrafanaUsers"`
 }
 
 //GrafanaUser - Grafana user without API key information
 type GrafanaUser struct {
-	Description string
+	Description string `json:"Description"`
 }
 
 //IsValid - returns true i model is valid. Returns false if invalid and includes a non-nil error

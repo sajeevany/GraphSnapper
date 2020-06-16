@@ -2,7 +2,6 @@ package v1
 
 import (
 	"github.com/aerospike/aerospike-client-go"
-	accountv1 "github.com/sajeevany/graphSnapper/internal/account/v1"
 	"github.com/sirupsen/logrus"
 )
 
@@ -13,8 +12,8 @@ type RecordV1 struct {
 	Credentials Credentials
 }
 
-func (r RecordV1) ToRecordViewV1() accountv1.RecordViewV1 {
-	return accountv1.RecordViewV1{
+func (r RecordV1) ToRecordViewV1() RecordViewV1 {
+	return RecordViewV1{
 		Metadata:    r.Metadata.toMetadataView1(),
 		Account:     r.Account.toAccountView1(),
 		Credentials: r.Credentials.toCredentialsView1(),
@@ -28,11 +27,11 @@ type Metadata struct {
 	CreateTime string
 }
 
-func (m Metadata) toMetadataView1() accountv1.MetadataView1 {
-	return accountv1.MetadataView1{
-		PrimaryKey: m.PrimaryKey,
-		LastUpdate: m.LastUpdate,
-		CreateTime: m.CreateTime,
+func (m Metadata) toMetadataView1() MetadataView1 {
+	return MetadataView1{
+		PrimaryKey:    m.PrimaryKey,
+		LastUpdate:    m.LastUpdate,
+		CreateTimeUTC: m.CreateTime,
 	}
 }
 
@@ -50,8 +49,8 @@ type Account struct {
 	Alias string
 }
 
-func (a Account) toAccountView1() accountv1.AccountView1 {
-	return accountv1.AccountView1{
+func (a Account) toAccountView1() AccountView1 {
+	return AccountView1{
 		Email: a.Email,
 		Alias: a.Alias,
 	}
@@ -69,13 +68,13 @@ type Credentials struct {
 	GrafanaUsers map[string]DBGrafanaUser
 }
 
-func (c Credentials) toCredentialsView1() accountv1.CredentialsView1 {
-	cv := accountv1.CredentialsView1{
-		GrafanaUsers: make(map[string]accountv1.GrafanaUser, len(c.GrafanaUsers)),
+func (c Credentials) toCredentialsView1() CredentialsView1 {
+	cv := CredentialsView1{
+		GrafanaUsers: make(map[string]GrafanaUser, len(c.GrafanaUsers)),
 	}
 
 	for i, v := range c.GrafanaUsers {
-		cv.GrafanaUsers[i] = accountv1.GrafanaUser{
+		cv.GrafanaUsers[i] = GrafanaUser{
 			Description: v.Description,
 		}
 	}

@@ -13,3 +13,11 @@ Access swagger API:
 Run unit tests:
 
     go test -short ./...
+    
+Build image:
+    
+    ./build/buildImage.sh
+    
+    or 
+    
+    docker build --build-arg "GIT_COMMIT=CustomCommit" --build-arg "CONFIG_FILE=deploy/graphSnapper-conf_standalone.json" --tag "portfolio-service:CUSTOM" -f build/Dockerfile .

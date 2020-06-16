@@ -22,6 +22,13 @@ definitions:
         example: hello
         type: string
     type: object
+  v1.Account:
+    properties:
+      alias:
+        type: string
+      email:
+        type: string
+    type: object
 info:
   contact: {}
   description: Takes and updates snapshots from a graph service to a document store
@@ -39,6 +46,12 @@ paths:
         name: id
         required: true
         type: string
+      - description: Create account
+        in: body
+        name: account
+        required: true
+        schema:
+          $ref: '#/definitions/v1.Account'
       produces:
       - application/json
       responses:

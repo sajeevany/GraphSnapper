@@ -4,12 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	v12 "github.com/sajeevany/graphSnapper/internal/account/v1"
 	"github.com/sajeevany/graphSnapper/internal/config"
 	"github.com/sajeevany/graphSnapper/internal/credentials"
 	"github.com/sajeevany/graphSnapper/internal/db"
+	"github.com/sajeevany/graphSnapper/internal/handler/v1/account"
 	"github.com/sajeevany/graphSnapper/internal/health"
 	"github.com/sajeevany/graphSnapper/internal/logging"
+	"github.com/sajeevany/graphSnapper/internal/logging/middleware"
 	"github.com/sirupsen/logrus"
 )
 
@@ -77,8 +78,8 @@ func setupRouter(logger *logrus.Logger) *gin.Engine {
 	engine := gin.New()
 
 	//Add middleware
-	engine.Use(lm.SetCtxLogger(logger))
-	engine.Use(lm.LogRequest(logger))
+	engine.Use(middleware.SetCtxLogger(logger))
+	engine.Use(middleware.LogRequest(logger))
 	engine.Use(gin.Recovery())
 
 	return engine
@@ -91,22 +92,22 @@ func setupV1Routes(rtr *gin.Engine, logger *logrus.Logger, aeroClient *db.ASClie
 }
 
 func addHealthEndpoints(rtr *gin.Engine, logger *logrus.Logger) {
-	v1 := rtr.Group(fmt.Sprintf("%s%s", v1Api, health.HealthGroup))
+	v1Api := rtr.Group(fmt.Sprintf("%s%s", v1Api, health.HealthGroup))
 	{
-		v1.GET(health.HelloEndpoint, health.Hello(logger))
+		v1Api.GET(health.HelloEndpoint, health.Hello(logger))
 	}
 }
 
 func addAccountEndpoints(rtr *gin.Engine, logger *logrus.Logger, aeroClient *db.ASClient) {
-	v1 := rtr.Group(fmt.Sprintf("%s%s", v1Api, v12.AccountGroup))
+	v1Api := rtr.Group(fmt.Sprintf("%s%s", v1Api, account.Group))
 	{
-		v1.PUT(v12.PutAccountEndpoint, v12.PutAccountV1(logger, aeroClient))
+		v1Api.PUT(account.PutAccountEndpoint, account.PutAccountV1(logger, aeroClient))
 	}
 }
 
 func addCredentialsEndpoints(rtr *gin.Engine, logger *logrus.Logger, aeroClient *db.ASClient) {
-	v1 := rtr.Group(fmt.Sprintf("%s%s", v1Api, credentials.CredGroup))
+	v1Api := rtr.Group(fmt.Sprintf("%s%s", v1Api, credentials.CredGroup))
 	{
-		v1.POST(credentials.PostCredBatch, credentials.AddCredentials(logger, aeroClient))
+		v1Api.POST(credentials.PostCredBatch, credentials.AddCredentials(logger, aeroClient))
 	}
 }
