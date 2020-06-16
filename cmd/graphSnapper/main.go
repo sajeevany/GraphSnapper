@@ -34,7 +34,7 @@ func main() {
 		if prettyIA, err := json.MarshalIndent(invalidArgs, "", "\t"); err != nil {
 			logger.WithFields(conf.GetFields()).Fatalf("Configuration file <%v> is invalid. Unable to prettyPrint args <%v>. Invalid arguments: <%v>", confFP, err, invalidArgs)
 		} else {
-			logger.WithFields(conf.GetFields()).Fatalf("Configuration file <%v> is invalid. Invalid arguments: <%v>", confFP, prettyIA)
+			logger.WithFields(conf.GetFields()).Fatalf("Configuration file <%v> is invalid. Invalid arguments: <%v>", confFP, string(prettyIA))
 		}
 	}
 
@@ -63,7 +63,7 @@ func readConf(logger *logrus.Logger, filepath string) (*config.Conf, bool, map[s
 	conf, err := config.Read(filepath, logger)
 	if err != nil {
 		//Log error and use default values returned
-		logger.Fatal(err)
+		//logger.Fatal(err)
 	}
 
 	//validate config.

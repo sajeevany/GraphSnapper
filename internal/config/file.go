@@ -33,7 +33,7 @@ func Read(conf string, logger *logrus.Logger) (*Conf, error) {
 
 	} else if os.IsNotExist(err) {
 		//file doesn't exist
-		logger.Errorf("Configuration file <%v> does not exist. Using defaults.  Encountered error <%v>", conf, err)
+		logger.Errorf("Configuration file <%v> does not exist. Encountered error <%v>", conf, err)
 		return nil, err
 	} else {
 		logger.Errorf("Error <%v> while evaluating if config file <%v> exists.", err, conf)
