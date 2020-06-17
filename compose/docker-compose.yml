@@ -6,7 +6,7 @@ services:
       context: ..
       dockerfile: build/Dockerfile
       args:
-        CONFIG_FILE: "deploy/graphSnapper-conf_compose.json"
+        CONFIG_FILE: "compose/graphSnapper-conf_compose.json"
         GIT_COMMIT: $GIT_COMMIT
     depends_on:
       - nosql
