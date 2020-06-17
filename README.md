@@ -3,7 +3,7 @@ Tool which calls snapshot APIs on a defined cadence and stores them within the d
 
 Generate swagger files:
 
-    swag init cmd/graphSnapper/main.go -g cmd/graphSnapper/main.go  -d ./
+    swag init -g cmd/graphSnapper/main.go -o ./docs
 
 Access swagger API:
 
