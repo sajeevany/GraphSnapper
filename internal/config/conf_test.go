@@ -33,7 +33,6 @@ func TestAerospikePortfolioConfig_AddInvalidArg(t *testing.T) {
 				ok: false,
 				invalidArgs: map[string]string{
 					"conf.aerospike.Host":             fmt.Sprintf("<%v> field is using an invalid value <%v>", "Host", ""),
-					"conf.aerospike.Password":         fmt.Sprintf("<%v> field is using an invalid value <%v>", "Password", ""),
 					"conf.aerospike.Port":             fmt.Sprintf("<%v> field is using an invalid value <%v>", "Port", "0"),
 					"conf.aerospike.AccountNamespace": fmt.Sprintf("<%v> field is using an invalid value <%v>", "AccountNamespace", ""),
 				},

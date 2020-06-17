@@ -40,11 +40,6 @@ func (as AerospikeCfg) IsValid(logger *logrus.Logger, currentPath string, invali
 		isValid = false
 	}
 
-	if as.Password == "" {
-		AddInvalidArg(currentPath, "Password", as.Password, invalidArgs)
-		isValid = false
-	}
-
 	if as.AccountNamespace == "" {
 		AddInvalidArg(currentPath, "AccountNamespace", as.AccountNamespace, invalidArgs)
 		isValid = false

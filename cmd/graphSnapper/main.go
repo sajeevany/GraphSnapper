@@ -12,6 +12,10 @@ import (
 	"github.com/sajeevany/graphSnapper/internal/logging"
 	"github.com/sajeevany/graphSnapper/internal/logging/middleware"
 	"github.com/sirupsen/logrus"
+	ginSwagger "github.com/swaggo/gin-swagger"
+	"github.com/swaggo/gin-swagger/swaggerFiles"
+
+	_ "github.com/sajeevany/graphSnapper/docs"
 )
 
 const v1Api = "/api/v1"
@@ -50,8 +54,11 @@ func main() {
 	//Setup routes
 	setupV1Routes(router, logger, aeroClient)
 
+	//Add swagger route
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 	//Use default route of 8080.
-	routerErr := router.Run("8080")
+	routerErr := router.Run(":8080")
 	if routerErr != nil {
 		logger.Errorf("An error occurred when starting the router. <%v>", routerErr)
 	}

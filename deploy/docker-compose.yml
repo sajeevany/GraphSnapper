@@ -1,10 +1,10 @@
 version: '3.6'
 services:
-  portfolio-service:
+  graph-snapper:
     command: /bin/sh -c "export GIT_COMMIT=$$(git rev-parse HEAD)"
     build:
       context: ..
-      dockerfile: ../build/Dockerfile
+      dockerfile: build/Dockerfile
       args:
         CONFIG_FILE: "deploy/graphSnapper-conf_compose.json"
         GIT_COMMIT: $GIT_COMMIT
@@ -15,7 +15,7 @@ services:
   nosql:
     ulimits:
       nofile: 90000
-    image: "aerospike:4.5.3.6"
+    image: "aerospike:5.0.0.4"
     ports:
       - "3000:3000"
       - "3001:3001"
