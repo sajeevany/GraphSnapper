@@ -52,7 +52,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/v1.Account"
+                            "$ref": "#/definitions/view.Account"
                         }
                     }
                 ],
@@ -151,7 +151,7 @@ var doc = `{
                 }
             }
         },
-        "v1.Account": {
+        "view.Account": {
             "type": "object",
             "properties": {
                 "alias": {
@@ -178,7 +178,7 @@ type swaggerInfo struct {
 var SwaggerInfo = swaggerInfo{
 	Version:     "1.0",
 	Host:        "",
-	BasePath:    "/api/v1",
+	BasePath:    "/api/view",
 	Schemes:     []string{},
 	Title:       "Graph Snapper API",
 	Description: "Takes and updates snapshots from a graph service to a document store",

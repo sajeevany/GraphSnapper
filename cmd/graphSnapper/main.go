@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/sajeevany/graphSnapper/internal/account/handler/v1"
 	"github.com/sajeevany/graphSnapper/internal/config"
 	"github.com/sajeevany/graphSnapper/internal/credentials"
-	"github.com/sajeevany/graphSnapper/internal/db"
-	"github.com/sajeevany/graphSnapper/internal/handler/v1/account"
+	"github.com/sajeevany/graphSnapper/internal/db/aerospike/access"
 	"github.com/sajeevany/graphSnapper/internal/health"
 	"github.com/sajeevany/graphSnapper/internal/logging"
 	"github.com/sajeevany/graphSnapper/internal/logging/middleware"
@@ -18,13 +18,13 @@ import (
 	_ "github.com/sajeevany/graphSnapper/docs"
 )
 
-const v1Api = "/api/v1"
+const v1Api = "/api/view"
 
 // @title Graph Snapper API
 // @version 1.0
 // @description Takes and updates snapshots from a graph service to a document store
 // @license.name MIT License
-// @BasePath /api/v1
+// @BasePath /api/view
 func main() {
 
 	//Create a universal logger. Set default to debug and update later
@@ -43,7 +43,7 @@ func main() {
 	}
 
 	//Get aerospike client
-	aeroClient, err := db.New(logger, conf.Aerospike)
+	aeroClient, err := access.New(logger, conf.Aerospike)
 	if err != nil {
 		logger.WithFields(conf.Aerospike.GetFields()).Fatalf("Failed to create Aerospike client using client. Error : <%v>", err)
 	}
@@ -92,7 +92,7 @@ func setupRouter(logger *logrus.Logger) *gin.Engine {
 	return engine
 }
 
-func setupV1Routes(rtr *gin.Engine, logger *logrus.Logger, aeroClient *db.ASClient) {
+func setupV1Routes(rtr *gin.Engine, logger *logrus.Logger, aeroClient *access.ASClient) {
 	addHealthEndpoints(rtr, logger)
 	addAccountEndpoints(rtr, logger, aeroClient)
 	addCredentialsEndpoints(rtr, logger, aeroClient)
@@ -105,14 +105,14 @@ func addHealthEndpoints(rtr *gin.Engine, logger *logrus.Logger) {
 	}
 }
 
-func addAccountEndpoints(rtr *gin.Engine, logger *logrus.Logger, aeroClient *db.ASClient) {
-	v1Api := rtr.Group(fmt.Sprintf("%s%s", v1Api, account.Group))
+func addAccountEndpoints(rtr *gin.Engine, logger *logrus.Logger, aeroClient *access.ASClient) {
+	v1Api := rtr.Group(fmt.Sprintf("%s%s", v1Api, v1.Group))
 	{
-		v1Api.PUT(account.PutAccountEndpoint, account.PutAccountV1(logger, aeroClient))
+		v1Api.PUT(v1.PutAccountEndpoint, v1.PutAccountV1(logger, aeroClient))
 	}
 }
 
-func addCredentialsEndpoints(rtr *gin.Engine, logger *logrus.Logger, aeroClient *db.ASClient) {
+func addCredentialsEndpoints(rtr *gin.Engine, logger *logrus.Logger, aeroClient *access.ASClient) {
 	v1Api := rtr.Group(fmt.Sprintf("%s%s", v1Api, credentials.CredGroup))
 	{
 		v1Api.POST(credentials.PostCredBatch, credentials.AddCredentials(logger, aeroClient))

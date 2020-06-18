@@ -22,7 +22,7 @@ func Read(conf string, logger *logrus.Logger) (*Conf, error) {
 			return nil, err
 		}
 
-		//Unmarshal data as json
+		//Unmarshal data access json
 		var cStruct Conf
 		if convErr := json.Unmarshal(data, &cStruct); convErr != nil {
 			logger.Errorf("Error unmarshalling configuration file <%v>. Encountered error <%v>.", conf, convErr)

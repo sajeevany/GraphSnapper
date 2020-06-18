@@ -6,7 +6,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-//SetCtxLogger - Sets a logger as defined by LoggerKey
+//SetCtxLogger - Sets a logger access defined by LoggerKey
 func SetCtxLogger(logger *logrus.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Set(logging.LoggerKey, logger)

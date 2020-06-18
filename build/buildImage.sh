@@ -1,5 +1,5 @@
 #!/bin/bash
-#Expect to run this from the root of the project as "./build/buildImage.sh"
+#Expect to run this from the root of the project access "./build/buildImage.sh"
 
 DOCKER_TAG="$(date +%s)"
 echo "DOCKER_TAG: $DOCKER_TAG"

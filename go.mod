@@ -10,6 +10,7 @@ require (
 	github.com/google/go-cmp v0.4.1 // indirect
 	github.com/onsi/ginkgo v1.12.3 // indirect
 	github.com/sirupsen/logrus v1.6.0
+	github.com/swaggo/gin-swagger v1.2.0
 	github.com/swaggo/swag v1.6.5
 	github.com/yuin/gopher-lua v0.0.0-20200603152657-dc2b0ca8b37e // indirect
 	golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a // indirect

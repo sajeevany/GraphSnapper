@@ -3,7 +3,7 @@ package credentials
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/sajeevany/graphSnapper/internal/db"
+	"github.com/sajeevany/graphSnapper/internal/db/aerospike/access"
 	"github.com/sirupsen/logrus"
 	"net/http"
 )
@@ -18,7 +18,7 @@ const PostCredBatch = "/batch"
 //@Success 200 {object} StoredUsers
 //@Router /credentials/{accountId}/batch [post]
 //@Tags credentials
-func AddCredentials(logger *logrus.Logger, aeroClient *db.ASClient) gin.HandlerFunc {
+func AddCredentials(logger *logrus.Logger, aeroClient *access.ASClient) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
 		//Validate that id parameter has been set
@@ -66,11 +66,11 @@ func AddCredentials(logger *logrus.Logger, aeroClient *db.ASClient) gin.HandlerF
 	}
 }
 
-func validateUserConnectivity(logger *logrus.Logger, aeroClient *db.ASClient, addUsersMdl AddUsersModel) error {
+func validateUserConnectivity(logger *logrus.Logger, aeroClient *access.ASClient, addUsersMdl AddUsersModel) error {
 	return nil
 }
 
-func storeUsers(logger *logrus.Logger, aeroClient *db.ASClient, addUsersMdl AddUsersModel) (StoredUsers, error) {
+func storeUsers(logger *logrus.Logger, aeroClient *access.ASClient, addUsersMdl AddUsersModel) (StoredUsers, error) {
 
 	storedUsers := StoredUsers{
 		GrafanaUsers: []GrafanaDbUser{},

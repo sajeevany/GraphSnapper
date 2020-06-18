@@ -1,4 +1,4 @@
-basePath: /api/v1
+basePath: /api/view
 definitions:
   credentials.GrafanaDbUser:
     properties:
@@ -51,7 +51,7 @@ paths:
         name: account
         required: true
         schema:
-          $ref: '#/definitions/v1.Account'
+          $ref: '#/definitions/view.Account'
       produces:
       - application/json
       responses:

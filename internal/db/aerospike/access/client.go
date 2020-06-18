@@ -1,4 +1,4 @@
-package db
+package access
 
 import (
 	"fmt"
@@ -7,7 +7,13 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+type AerospikeClient interface {
+	GetWriter() DbWriter
+	GetReader() DbReader
+}
+
 type ASClient struct {
+	Logger           *logrus.Logger
 	Client           *aerospike.Client
 	WritePolicy      *aerospike.WritePolicy
 	ScanPolicy       *aerospike.ScanPolicy
@@ -27,9 +33,18 @@ func New(logger *logrus.Logger, conf config.AerospikeCfg) (*ASClient, error) {
 
 	//Create policies and define ASClient
 	return &ASClient{
+		Logger:           logger,
 		Client:           client,
 		WritePolicy:      aerospike.NewWritePolicy(0, 0),
 		ScanPolicy:       aerospike.NewScanPolicy(),
 		AccountNamespace: conf.AccountNamespace,
 	}, nil
+}
+
+func (a *ASClient) GetWriter() DbWriter {
+	return NewAerospikeWriter(a)
+}
+
+func (a *ASClient) GetReader() DbReader {
+	return NewAerospikeReader(a)
 }

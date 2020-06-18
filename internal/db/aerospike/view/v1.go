@@ -1,4 +1,4 @@
-package v1
+package view
 
 import (
 	"fmt"
@@ -8,19 +8,20 @@ import (
 //RecordViewV1 - Aerospike configuration + credentials data
 type RecordViewV1 struct {
 	Metadata    MetadataView1    `json:"Metadata"`
-	Account     AccountView1     `json:"Account"`
+	Account     AccountViewV1    `json:"Account"`
 	Credentials CredentialsView1 `json:"Credentials"`
 }
 
-//Metadata - Record metadata
+//MetadataView1 - Record metadata
 type MetadataView1 struct {
 	PrimaryKey    string `json:"PrimaryKey"`
 	LastUpdate    string `json:"LastUpdate"`
 	CreateTimeUTC string `json:"CreateTimeUTC"`
+	Version       string `json:Version`
 }
 
-//Account - Creation account details
-type AccountView1 struct {
+//AccountViewV1 - Creation account details
+type AccountViewV1 struct {
 	Email string `json:"Email"`
 	Alias string `json:"Alias,omitempty"` //Optional arg. Won't be returned if missing.
 }
@@ -36,7 +37,7 @@ type GrafanaUser struct {
 }
 
 //IsValid - returns true i model is valid. Returns false if invalid and includes a non-nil error
-func (a AccountView1) IsValid() (bool, error) {
+func (a AccountViewV1) IsValid() (bool, error) {
 
 	if a.Email == "" {
 		return false, fmt.Errorf("input email %v is invalid. Expect non-empty value", a.Email)
@@ -47,7 +48,7 @@ func (a AccountView1) IsValid() (bool, error) {
 	return true, nil
 }
 
-func (a AccountView1) GetFields() logrus.Fields {
+func (a AccountViewV1) GetFields() logrus.Fields {
 	return logrus.Fields{
 		"Email": a.Email,
 		"Alias": a.Alias,

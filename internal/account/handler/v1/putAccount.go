@@ -1,11 +1,11 @@
-package account
+package v1
 
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/sajeevany/graphSnapper/internal/aerospike"
-	"github.com/sajeevany/graphSnapper/internal/aerospike/v1"
-	"github.com/sajeevany/graphSnapper/internal/db"
+	"github.com/sajeevany/graphSnapper/internal/db/aerospike/access"
+	"github.com/sajeevany/graphSnapper/internal/db/aerospike/record"
+	"github.com/sajeevany/graphSnapper/internal/db/aerospike/view"
 	"github.com/sirupsen/logrus"
 	"net/http"
 	"time"
@@ -18,12 +18,12 @@ const PutAccountEndpoint = "/{id}"
 //@Description Non-authenticated endpoint creates an empty record at the specified key. Overwrites any record that already exists
 //@Produce json
 //@Param id path string true "id"
-//@Param account body v1.Account true "Create account"
+//@Param account body view.Account true "Create account"
 //@Success 200 {string} string "ok"
 //@Fail 400 {object} gin.H
 //@Router /account/{id} [put]
 //@Tags account
-func PutAccountV1(logger *logrus.Logger, aeroClient *db.ASClient) gin.HandlerFunc {
+func PutAccountV1(logger *logrus.Logger, aeroClient *access.ASClient) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
 		//Validate that id parameter has been set
@@ -36,7 +36,7 @@ func PutAccountV1(logger *logrus.Logger, aeroClient *db.ASClient) gin.HandlerFun
 		}
 
 		//Bind account object
-		var account v1.AccountView1
+		var account view.AccountViewV1
 		if bErr := ctx.BindJSON(&account); bErr != nil {
 			msg := fmt.Sprintf("Unable to bind request body to account object %v", bErr)
 			logger.Errorf(msg)
@@ -69,35 +69,35 @@ func PutAccountV1(logger *logrus.Logger, aeroClient *db.ASClient) gin.HandlerFun
 }
 
 //assumes valid account
-func createAccount(logger *logrus.Logger, aeroClient *db.ASClient, key string, account v1.AccountView1) (v1.RecordV1, error) {
+func createAccount(logger *logrus.Logger, aeroClient *access.ASClient, key string, account view.AccountViewV1) (record.RecordV1, error) {
 
 	logger.Debug("Creating account record")
 
-	//Get record as known to aerospikeWriter
+	//Get record access known to aerospikeWriter
 	record := newAccountRecord(key, account)
 
-	aeroWriter := aerospike.NewAerospikeWriter(logger, aeroClient)
+	aeroWriter := aeroClient.GetWriter()
 	if wErr := aeroWriter.WriteRecord(key, record); wErr != nil {
 		hErr := fmt.Sprintf("Unable to write record with key <%v>", key)
 		logger.WithFields(record.GetFields()).Error(hErr)
-		return v1.RecordV1{}, wErr
+		return record.RecordV1{}, wErr
 	}
 
 	return record, nil
 }
 
-func newAccountRecord(key string, account v1.AccountView1) v1.RecordV1 {
+func newAccountRecord(key string, account view.AccountViewV1) record.RecordV1 {
 	now := time.Now().UTC().String()
-	return v1.RecordV1{
-		Metadata: v1.Metadata{
+	return record.RecordV1{
+		Metadata: record.Metadata{
 			PrimaryKey: key,
 			LastUpdate: now,
 			CreateTime: now,
 		},
-		Account: v1.Account{
+		Account: record.Account{
 			Email: account.Email,
 			Alias: account.Alias,
 		},
-		Credentials: v1.Credentials{},
+		Credentials: record.Credentials{},
 	}
 }

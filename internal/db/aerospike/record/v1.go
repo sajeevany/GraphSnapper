@@ -1,9 +1,22 @@
-package v1
+package record
 
 import (
 	"github.com/aerospike/aerospike-client-go"
+	"github.com/sajeevany/graphSnapper/internal/db/aerospike/view"
 	"github.com/sirupsen/logrus"
 )
+
+const (
+	MetadataBinName    = "Metadata"
+	AccountBinName     = "Account"
+	CredentialsBinName = "Credentials"
+)
+
+type Record interface {
+	GetFields() logrus.Fields
+	ToASBinSlice() []*aerospike.Bin
+	ToRecordViewV1() view.RecordViewV1
+}
 
 //Record - Aerospike configuration + credentials data
 type RecordV1 struct {
@@ -12,8 +25,8 @@ type RecordV1 struct {
 	Credentials Credentials
 }
 
-func (r RecordV1) ToRecordViewV1() RecordViewV1 {
-	return RecordViewV1{
+func (r RecordV1) ToRecordViewV1() view.RecordViewV1 {
+	return view.RecordViewV1{
 		Metadata:    r.Metadata.toMetadataView1(),
 		Account:     r.Account.toAccountView1(),
 		Credentials: r.Credentials.toCredentialsView1(),
@@ -25,13 +38,15 @@ type Metadata struct {
 	PrimaryKey string
 	LastUpdate string
 	CreateTime string
+	Version    string
 }
 
-func (m Metadata) toMetadataView1() MetadataView1 {
-	return MetadataView1{
+func (m Metadata) toMetadataView1() view.MetadataView1 {
+	return view.MetadataView1{
 		PrimaryKey:    m.PrimaryKey,
 		LastUpdate:    m.LastUpdate,
 		CreateTimeUTC: m.CreateTime,
+		Version:       m.Version,
 	}
 }
 
@@ -49,8 +64,8 @@ type Account struct {
 	Alias string
 }
 
-func (a Account) toAccountView1() AccountView1 {
-	return AccountView1{
+func (a Account) toAccountView1() view.AccountViewV1 {
+	return view.AccountViewV1{
 		Email: a.Email,
 		Alias: a.Alias,
 	}
@@ -68,13 +83,13 @@ type Credentials struct {
 	GrafanaUsers map[string]DBGrafanaUser
 }
 
-func (c Credentials) toCredentialsView1() CredentialsView1 {
-	cv := CredentialsView1{
-		GrafanaUsers: make(map[string]GrafanaUser, len(c.GrafanaUsers)),
+func (c Credentials) toCredentialsView1() view.CredentialsView1 {
+	cv := view.CredentialsView1{
+		GrafanaUsers: make(map[string]view.GrafanaUser, len(c.GrafanaUsers)),
 	}
 
 	for i, v := range c.GrafanaUsers {
-		cv.GrafanaUsers[i] = GrafanaUser{
+		cv.GrafanaUsers[i] = view.GrafanaUser{
 			Description: v.Description,
 		}
 	}
@@ -125,17 +140,18 @@ func (r RecordV1) ToASBinSlice() []*aerospike.Bin {
 
 func (m Metadata) getMetadataBin() *aerospike.Bin {
 	return aerospike.NewBin(
-		"Metadata",
+		MetadataBinName,
 		map[string]string{
 			"PrimaryKey": m.PrimaryKey,
 			"LastUpdate": m.LastUpdate,
 			"CreateTime": m.CreateTime,
+			"Version":    m.Version,
 		})
 }
 
 func (a Account) getAccountBin() *aerospike.Bin {
 	return aerospike.NewBin(
-		"Account",
+		AccountBinName,
 		map[string]string{
 			"Email": a.Email,
 			"Alias": a.Alias,
@@ -154,7 +170,7 @@ func (c Credentials) getCredentialBin() *aerospike.Bin {
 	}
 
 	return aerospike.NewBin(
-		"Credentials",
+		CredentialsBinName,
 		map[string]interface{}{
 			"GrafanaUsers": grafanaUsersBinMap,
 		})

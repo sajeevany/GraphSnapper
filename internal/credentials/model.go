@@ -31,7 +31,7 @@ func (l AddUsersModel) GetFields() logrus.Fields {
 
 	var fields logrus.Fields
 
-	//Get grafana credentials info as fields
+	//Get grafana credentials info access fields
 	grafanaUserMap := make(map[string]string)
 	for _, v := range l.GrafanaUsers {
 		grafanaUserMap[v.APIKey] = v.Description
