@@ -18,13 +18,13 @@ import (
 	_ "github.com/sajeevany/graphSnapper/docs"
 )
 
-const v1Api = "/api/view"
+const v1Api = "/api/v1"
 
 // @title Graph Snapper API
 // @version 1.0
 // @description Takes and updates snapshots from a graph service to a document store
 // @license.name MIT License
-// @BasePath /api/view
+// @BasePath /api/v1
 func main() {
 
 	//Create a universal logger. Set default to debug and update later

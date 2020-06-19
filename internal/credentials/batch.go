@@ -9,14 +9,14 @@ import (
 )
 
 const CredGroup = "/credentials"
-const PostCredBatch = "/batch"
+const PostCredBatch = "/:accountId/batch"
 
 //@Summary Create users endpoint
 //@Description Non-authenticated endpoint which stores the provided credentials credentials owned by a specified account. Verifies connectivity before storing in Aerospike
 //@Produce json
 //@Param accountId path string true "Account ID"
 //@Success 200 {object} StoredUsers
-//@Router /credentials/{accountId}/batch [post]
+//@Router /credentials/:accountId/batch [post]
 //@Tags credentials
 func AddCredentials(logger *logrus.Logger, aeroClient *access.ASClient) gin.HandlerFunc {
 	return func(ctx *gin.Context) {

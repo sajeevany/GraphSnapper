@@ -12,16 +12,16 @@ import (
 )
 
 const Group = "/account"
-const PutAccountEndpoint = "/{id}"
+const PutAccountEndpoint = "/:id"
 
 //@Summary Create account record
 //@Description Non-authenticated endpoint creates an empty record at the specified key. Overwrites any record that already exists
 //@Produce json
 //@Param id path string true "id"
-//@Param account body view.Account true "Create account"
+//@Param account body view.AccountViewV1 true "Create account"
 //@Success 200 {string} string "ok"
 //@Fail 400 {object} gin.H
-//@Router /account/{id} [put]
+//@Router /account/:id [put]
 //@Tags account
 func PutAccountV1(logger *logrus.Logger, aeroClient *access.ASClient) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
@@ -74,16 +74,16 @@ func createAccount(logger *logrus.Logger, aeroClient *access.ASClient, key strin
 	logger.Debug("Creating account record")
 
 	//Get record access known to aerospikeWriter
-	record := newAccountRecord(key, account)
+	rec := newAccountRecord(key, account)
 
 	aeroWriter := aeroClient.GetWriter()
-	if wErr := aeroWriter.WriteRecord(key, record); wErr != nil {
+	if wErr := aeroWriter.WriteRecord(key, rec); wErr != nil {
 		hErr := fmt.Sprintf("Unable to write record with key <%v>", key)
-		logger.WithFields(record.GetFields()).Error(hErr)
+		logger.WithFields(rec.GetFields()).Error(hErr)
 		return record.RecordV1{}, wErr
 	}
 
-	return record, nil
+	return rec, nil
 }
 
 func newAccountRecord(key string, account view.AccountViewV1) record.RecordV1 {

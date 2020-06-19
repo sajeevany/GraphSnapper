@@ -21,9 +21,8 @@ services:
       - "3001:3001"
       - "3002:3002"
       - "3003:3003"
-    configs:
-      - source: aerospike
-        target: /etc/aerospike/aerospike.conf
+    volumes:
+      - ./aerospike.conf:/etc/aerospike/aerospike.conf
 configs:
   aerospike:
     file: ./aerospile.conf

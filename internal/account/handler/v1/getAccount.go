@@ -12,11 +12,10 @@ import (
 const GetAccountEndpoint = "/{id}"
 
 //@Summary Get account record
-//@Description Non-authenticated endpoint fetches account at speciied key
+//@Description Non-authenticated endpoint fetches account at specified key
 //@Produce json
 //@Param id path string true "id"
-//@Param account body view.Account true "Create account"
-//@Success 200 view.Account
+//@Success 200 {object} view.RecordViewV1
 //@Fail 404 {object} gin.H
 //@Router /account/{id} [get]
 //@Tags account
@@ -33,7 +32,7 @@ func GetAccountV1(logger *logrus.Logger, aeroClient *access.ASClient) gin.Handle
 		}
 
 		//Create account
-		record, err := getAccount(logger, aeroClient, accountId, account)
+		record, err := getAccount(logger, aeroClient, accountId)
 		if err != nil {
 			hrErrMsg := fmt.Sprintf("internal error when writing record to aerospike. %v", err)
 			logger.WithFields(record.GetFields()).Errorf(hrErrMsg)
@@ -54,5 +53,5 @@ func getAccount(logger *logrus.Logger, aeroClient *access.ASClient, key string) 
 
 	logger.Debug("Creating account record")
 
-	return record, nil
+	return record.RecordV1{}, nil
 }
