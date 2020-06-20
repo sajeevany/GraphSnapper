@@ -9,7 +9,7 @@ import (
 func GetVersion(logger *logrus.Logger, aeroRecord *aerospike.BinMap) string {
 
 	if aeroRecord == nil || !hasMetadataBin(logger, aeroRecord) {
-		logger.Debug("Aerospike record is empty or missing metadata bin. Returning empty value access version. Binmap <%v>", aeroRecord)
+		logger.Debugf("Aerospike record is empty or missing metadata bin. Returning empty value access version. Binmap <%v>", aeroRecord)
 		return ""
 	}
 

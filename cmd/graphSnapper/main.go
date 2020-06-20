@@ -109,6 +109,7 @@ func addAccountEndpoints(rtr *gin.Engine, logger *logrus.Logger, aeroClient *acc
 	v1Api := rtr.Group(fmt.Sprintf("%s%s", v1Api, v1.Group))
 	{
 		v1Api.PUT(v1.PutAccountEndpoint, v1.PutAccountV1(logger, aeroClient))
+		v1Api.GET(v1.GetAccountEndpoint, v1.GetAccountV1(logger, aeroClient))
 	}
 }
 

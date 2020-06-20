@@ -27,7 +27,7 @@ func (a *AerospikeWriter) WriteRecord(key string, record record.RecordV1) error 
 	logger.WithFields(record.GetFields()).Debug("Starting record create")
 
 	//Create key
-	asKey, err := aerospike.NewKey(a.asClient.AccountNamespace, "account", key)
+	asKey, err := aerospike.NewKey(a.asClient.AccountNamespace.Namespace, a.asClient.AccountNamespace.SetName, key)
 	if err != nil {
 		logger.Errorf("Unexpected error when creating new key <%v>. err <%v>", key, err)
 		return err

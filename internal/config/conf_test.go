@@ -23,10 +23,12 @@ func TestAerospikePortfolioConfig_AddInvalidArg(t *testing.T) {
 
 	// Testing scenarios
 	var tests = []struct {
+		testName       string
 		expectedResult expectedResult
 		setup          setup
 	}{
 		{
+			testName: "TestAerospikePortfolioConfig_AddInvalidArg_0: All attributes are invalid",
 			//All attributes are invalid
 			expectedResult: expectedResult{
 
@@ -42,12 +44,34 @@ func TestAerospikePortfolioConfig_AddInvalidArg(t *testing.T) {
 				asConf: AerospikeCfg{
 					Host:             "", // Cannot be empty
 					Port:             0,  // Cannot be zero
-					Password:         "", // Cannot be empty
-					AccountNamespace: "", // Cannot be empty
+					AccountNamespace: AerospikeNamespace{}, // Cannot be empty or zero AerospikeNamespace
 				},
 			},
 		},
 		{
+			testName: "TestAerospikePortfolioConfig_AddInvalidArg_1: conf.Account Namespace has missing namespace",
+			//AccountNamespace is missing namespace name
+			expectedResult: expectedResult{
+
+				ok: false,
+				invalidArgs: map[string]string{
+					"conf.aerospike.AccountNamespace.namespace": fmt.Sprintf("<%v> field is using an invalid value <%v>", "namespace", ""),
+				},
+			},
+			setup: setup{
+				jsonPath: "conf.aerospike",
+				asConf: AerospikeCfg{
+					Host:             "abc", // Cannot be empty
+					Port:             8080,  // Cannot be zero
+					AccountNamespace: AerospikeNamespace{
+						Namespace: "",  // Cannot be empty
+						SetName:   "blah",
+					},
+				},
+			},
+		},
+		{
+			testName: "TestAerospikePortfolioConfig_AddInvalidArg_2: logging level is inccorrect",
 			expectedResult: expectedResult{
 				ok: false,
 				invalidArgs: map[string]string{
@@ -64,7 +88,7 @@ func TestAerospikePortfolioConfig_AddInvalidArg(t *testing.T) {
 	//Nil logger to be used in testing
 	logger := logrus.New()
 
-	// Execute test
+	// Execute testName
 	for _, scenario := range tests {
 
 		//scenario attributes
@@ -77,7 +101,8 @@ func TestAerospikePortfolioConfig_AddInvalidArg(t *testing.T) {
 
 		//compare with expected result
 		if ok != sExpect.ok {
-			t.Errorf("Expected <%v> for ok but was <%v>", sExpect.ok, ok)
+			t.Errorf("Expected asConf.IsValid for to be  <%v> but was  <%v> ", sExpect.ok, ok)
+			t.Fail()
 		}
 
 		if !reflect.DeepEqual(sExpect.invalidArgs, invalidArgs) {
@@ -86,6 +111,9 @@ func TestAerospikePortfolioConfig_AddInvalidArg(t *testing.T) {
 			t.Errorf("Actual result <%v> does not match expected value <%v>", string(actual), string(expected))
 		}
 
+		if t.Failed(){
+			t.Logf("Failed test description: %v", scenario.testName)
+		}
 	}
 
 }

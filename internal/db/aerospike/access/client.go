@@ -16,8 +16,8 @@ type ASClient struct {
 	Logger           *logrus.Logger
 	Client           *aerospike.Client
 	WritePolicy      *aerospike.WritePolicy
-	ScanPolicy       *aerospike.ScanPolicy
-	AccountNamespace string
+	ReadPolicy       *aerospike.BasePolicy
+	AccountNamespace config.AerospikeNamespace
 }
 
 //New - Returns ASClinet built from config
@@ -36,7 +36,7 @@ func New(logger *logrus.Logger, conf config.AerospikeCfg) (*ASClient, error) {
 		Logger:           logger,
 		Client:           client,
 		WritePolicy:      aerospike.NewWritePolicy(0, 0),
-		ScanPolicy:       aerospike.NewScanPolicy(),
+		ReadPolicy:       aerospike.NewPolicy(),
 		AccountNamespace: conf.AccountNamespace,
 	}, nil
 }
