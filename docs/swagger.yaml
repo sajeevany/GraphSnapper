@@ -74,6 +74,24 @@ info:
   version: "1.0"
 paths:
   /account/:id:
+    get:
+      description: Non-authenticated endpoint fetches account at specified key
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/view.RecordViewV1'
+      summary: Get account record
+      tags:
+      - account
     put:
       description: Non-authenticated endpoint creates an empty record at the specified key. Overwrites any record that already exists
       parameters:
@@ -96,25 +114,6 @@ paths:
           schema:
             type: string
       summary: Create account record
-      tags:
-      - account
-  /account/{id}:
-    get:
-      description: Non-authenticated endpoint fetches account at specified key
-      parameters:
-      - description: id
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/view.RecordViewV1'
-      summary: Get account record
       tags:
       - account
   /credentials/:accountId/batch:
