@@ -42,7 +42,7 @@ func (as AerospikeCfg) IsValid(logger *logrus.Logger, currentPath string, invali
 	}
 
 	//Validate namespace requirements
-	if !isAccountNSValid(logger, as.AccountNamespace, currentPath, invalidArgs){
+	if !isAccountNSValid(logger, as.AccountNamespace, currentPath, invalidArgs) {
 		isValid = false
 	}
 
@@ -64,7 +64,6 @@ func isAccountNSValid(logger *logrus.Logger, as AerospikeNamespace, currentPath 
 	}
 	return isValid
 }
-
 
 type AerospikeNamespace struct {
 	Namespace string `json:"namespace"`

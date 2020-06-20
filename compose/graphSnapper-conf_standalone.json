@@ -3,7 +3,10 @@
     "host": "host.docker.internal",
     "port": 3000,
     "password": "",
-    "accountNamespace": "test"
+    "accountNamespace": {
+      "namespace": "test",
+      "setName" : "account"
+    }
   },
   "logging": {
     "level": "debug"

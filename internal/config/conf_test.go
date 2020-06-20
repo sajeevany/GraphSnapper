@@ -42,8 +42,8 @@ func TestAerospikePortfolioConfig_AddInvalidArg(t *testing.T) {
 			setup: setup{
 				jsonPath: "conf.aerospike",
 				asConf: AerospikeCfg{
-					Host:             "", // Cannot be empty
-					Port:             0,  // Cannot be zero
+					Host:             "",                   // Cannot be empty
+					Port:             0,                    // Cannot be zero
 					AccountNamespace: AerospikeNamespace{}, // Cannot be empty or zero AerospikeNamespace
 				},
 			},
@@ -61,10 +61,10 @@ func TestAerospikePortfolioConfig_AddInvalidArg(t *testing.T) {
 			setup: setup{
 				jsonPath: "conf.aerospike",
 				asConf: AerospikeCfg{
-					Host:             "abc", // Cannot be empty
-					Port:             8080,  // Cannot be zero
+					Host: "abc", // Cannot be empty
+					Port: 8080,  // Cannot be zero
 					AccountNamespace: AerospikeNamespace{
-						Namespace: "",  // Cannot be empty
+						Namespace: "", // Cannot be empty
 						SetName:   "blah",
 					},
 				},
@@ -111,7 +111,7 @@ func TestAerospikePortfolioConfig_AddInvalidArg(t *testing.T) {
 			t.Errorf("Actual result <%v> does not match expected value <%v>", string(actual), string(expected))
 		}
 
-		if t.Failed(){
+		if t.Failed() {
 			t.Logf("Failed test description: %v", scenario.testName)
 		}
 	}
