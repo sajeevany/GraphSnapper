@@ -69,30 +69,31 @@ func PutAccountV1(logger *logrus.Logger, aeroClient *access.ASClient) gin.Handle
 }
 
 //assumes valid account
-func createAccount(logger *logrus.Logger, aeroClient *access.ASClient, key string, account view.AccountViewV1) (record.RecordV1, error) {
+func createAccount(logger *logrus.Logger, aeroClient *access.ASClient, key string, account view.AccountViewV1) (*record.RecordV1, error) {
 
 	logger.Debug("Creating account record")
 
 	//Get record access known to aerospikeWriter
-	rec := newAccountRecord(key, account)
+	rec := newAccountRecordV1(key, account)
 
 	aeroWriter := aeroClient.GetWriter()
 	if wErr := aeroWriter.WriteRecord(key, rec); wErr != nil {
 		hErr := fmt.Sprintf("Unable to write record with key <%v>", key)
 		logger.WithFields(rec.GetFields()).Error(hErr)
-		return record.RecordV1{}, wErr
+		return nil, wErr
 	}
 
-	return rec, nil
+	return &rec, nil
 }
 
-func newAccountRecord(key string, account view.AccountViewV1) record.RecordV1 {
+func newAccountRecordV1(key string, account view.AccountViewV1) record.RecordV1 {
 	now := time.Now().UTC().String()
 	return record.RecordV1{
 		Metadata: record.Metadata{
 			PrimaryKey: key,
 			LastUpdate: now,
 			CreateTime: now,
+			Version: record.V1RecordLevel,
 		},
 		Account: record.Account{
 			Email: account.Email,

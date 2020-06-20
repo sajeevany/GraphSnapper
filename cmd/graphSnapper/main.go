@@ -69,8 +69,7 @@ func readConf(logger *logrus.Logger, filepath string) (*config.Conf, bool, map[s
 	//Read configuration file. Kill startup if an error was found.
 	conf, err := config.Read(filepath, logger)
 	if err != nil {
-		//Log error and use default values returned
-		//logger.Fatal(err)
+		logger.Fatal(err)
 	}
 
 	//validate config.

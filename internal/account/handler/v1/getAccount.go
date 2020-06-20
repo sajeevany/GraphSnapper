@@ -34,7 +34,7 @@ func GetAccountV1(logger *logrus.Logger, aeroClient *access.ASClient) gin.Handle
 		reader := aeroClient.GetReader()
 		recordExists, aKey, kErr := reader.KeyExists(accountId)
 		if kErr != nil {
-			hrErrMsg := fmt.Sprintf("unable to check db for key <%v> namepsace <%v> set <%v>. err <%v>", accountId, aKey.Namespace(), aKey.SetName(), kErr)
+			hrErrMsg := fmt.Sprintf("unable to check db for key <%v>. err <%v>", accountId, kErr)
 			logger.Errorf(hrErrMsg)
 			ctx.JSON(http.StatusInternalServerError, gin.H{
 				"error":              kErr,
@@ -42,16 +42,16 @@ func GetAccountV1(logger *logrus.Logger, aeroClient *access.ASClient) gin.Handle
 			})
 			return
 		}
-		if !recordExists{
-			logger.Debugf("key <%v> namepsace <%v> set <%v> does not exist. Returning 404", accountId, aKey.Namespace(), aKey.SetName())
+		if !recordExists {
+			logger.Debugf("key <%v> namespace <%v> set <%v> does not exist. Returning 404", accountId, aKey.Namespace(), aKey.SetName())
 			ctx.Status(http.StatusNotFound)
 			return
 		}
 
 		//fetch account
 		rec, rErr := reader.ReadRecord(aKey)
-		if rErr != nil{
-			hrErrMsg := fmt.Sprintf("unable to read db for key <%v> namepsace <%v> set <%v>. err <%v>", accountId, aKey.Namespace(), aKey.SetName(), rErr)
+		if rErr != nil {
+			hrErrMsg := fmt.Sprintf("unable to read db for key <%v> namespace <%v> set <%v>. err <%v>", accountId, aKey.Namespace(), aKey.SetName(), rErr)
 			logger.Errorf(hrErrMsg)
 			ctx.JSON(http.StatusInternalServerError, gin.H{
 				"error":              kErr,

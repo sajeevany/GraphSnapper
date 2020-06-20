@@ -10,6 +10,7 @@ const (
 	MetadataBinName    = "Metadata"
 	AccountBinName     = "Account"
 	CredentialsBinName = "Credentials"
+	VersionAttrName    = "Version"
 )
 
 type Record interface {
