@@ -10,7 +10,7 @@ type DbWriter interface {
 	WriteRecord(key string, record record.RecordV1) error
 }
 
-func NewAerospikeWriter(asClient *ASClient) DbWriter {
+func newAerospikeWriter(asClient *ASClient) DbWriter {
 	return &AerospikeWriter{
 		asClient: asClient,
 	}

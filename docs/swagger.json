@@ -1,0 +1,232 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Takes and updates snapshots from a graph service to a document store",
+        "title": "Graph Snapper API",
+        "contact": {},
+        "license": {
+            "name": "MIT License"
+        },
+        "version": "1.0"
+    },
+    "basePath": "/api/v1",
+    "paths": {
+        "/account/:id": {
+            "put": {
+                "description": "Non-authenticated endpoint creates an empty record at the specified key. Overwrites any record that already exists",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "account"
+                ],
+                "summary": "Create account record",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Create account",
+                        "name": "account",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/view.AccountViewV1"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/account/{id}": {
+            "get": {
+                "description": "Non-authenticated endpoint fetches account at specified key",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "account"
+                ],
+                "summary": "Get account record",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/view.RecordViewV1"
+                        }
+                    }
+                }
+            }
+        },
+        "/credentials/:accountId/batch": {
+            "post": {
+                "description": "Non-authenticated endpoint which stores the provided credentials credentials owned by a specified account. Verifies connectivity before storing in Aerospike",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "credentials"
+                ],
+                "summary": "Create users endpoint",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Account ID",
+                        "name": "accountId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/credentials.StoredUsers"
+                        }
+                    }
+                }
+            }
+        },
+        "/health/hello": {
+            "get": {
+                "description": "Non-authenticated endpoint that returns 200 with hello message. Used to validate that the service is responsive.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "health"
+                ],
+                "summary": "Hello sanity endpoint",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/health.Ping"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "credentials.GrafanaDbUser": {
+            "type": "object",
+            "properties": {
+                "apikey": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "key": {
+                    "type": "string"
+                }
+            }
+        },
+        "credentials.StoredUsers": {
+            "type": "object",
+            "properties": {
+                "grafanaUsers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/credentials.GrafanaDbUser"
+                    }
+                }
+            }
+        },
+        "health.Ping": {
+            "type": "object",
+            "properties": {
+                "response": {
+                    "type": "string",
+                    "example": "hello"
+                }
+            }
+        },
+        "view.AccountViewV1": {
+            "type": "object",
+            "properties": {
+                "Alias": {
+                    "description": "Optional arg. Won't be returned if missing.",
+                    "type": "string"
+                },
+                "Email": {
+                    "type": "string"
+                }
+            }
+        },
+        "view.CredentialsView1": {
+            "type": "object",
+            "properties": {
+                "GrafanaUsers": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/view.GrafanaUser"
+                    }
+                }
+            }
+        },
+        "view.GrafanaUser": {
+            "type": "object",
+            "properties": {
+                "Description": {
+                    "type": "string"
+                }
+            }
+        },
+        "view.MetadataView1": {
+            "type": "object",
+            "properties": {
+                "CreateTimeUTC": {
+                    "type": "string"
+                },
+                "LastUpdate": {
+                    "type": "string"
+                },
+                "PrimaryKey": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "view.RecordViewV1": {
+            "type": "object",
+            "properties": {
+                "Account": {
+                    "type": "object",
+                    "$ref": "#/definitions/view.AccountViewV1"
+                },
+                "Credentials": {
+                    "type": "object",
+                    "$ref": "#/definitions/view.CredentialsView1"
+                },
+                "Metadata": {
+                    "type": "object",
+                    "$ref": "#/definitions/view.MetadataView1"
+                }
+            }
+        }
+    }
+}

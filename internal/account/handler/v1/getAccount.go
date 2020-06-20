@@ -2,10 +2,8 @@ package v1
 
 import (
 	"fmt"
-	"github.com/aerospike/aerospike-client-go"
 	"github.com/gin-gonic/gin"
 	"github.com/sajeevany/graphSnapper/internal/db/aerospike/access"
-	"github.com/sajeevany/graphSnapper/internal/db/aerospike/record"
 	"github.com/sirupsen/logrus"
 	"net/http"
 )
@@ -32,56 +30,38 @@ func GetAccountV1(logger *logrus.Logger, aeroClient *access.ASClient) gin.Handle
 			return
 		}
 
-		//Create account
-		record, rExists, err := getAccount(logger, aeroClient, accountId)
-		if err != nil {
-			hrErrMsg := fmt.Sprintf("internal error when writing record to aerospike. %v", err)
-			logger.WithFields(record.GetFields()).Errorf(hrErrMsg)
+		//Check if record exists
+		reader := aeroClient.GetReader()
+		recordExists, aKey, kErr := reader.KeyExists(accountId)
+		if kErr != nil {
+			hrErrMsg := fmt.Sprintf("unable to check db for key <%v> namepsace <%v> set <%v>. err <%v>", accountId, aKey.Namespace(), aKey.SetName(), kErr)
+			logger.Errorf(hrErrMsg)
 			ctx.JSON(http.StatusInternalServerError, gin.H{
-				"error":              err,
+				"error":              kErr,
 				"humanReadableError": hrErrMsg,
 			})
+			return
+		}
+		if !recordExists{
+			logger.Debugf("key <%v> namepsace <%v> set <%v> does not exist. Returning 404", accountId, aKey.Namespace(), aKey.SetName())
+			ctx.Status(http.StatusNotFound)
+			return
 		}
 
-		if !rExists {
-			hrErrMsg := fmt.Sprintf("record for key <%v> doesn't exist. err %v", accountId, err)
-			logger.WithFields(record.GetFields()).Errorf(hrErrMsg)
+		//fetch account
+		rec, rErr := reader.ReadRecord(aKey)
+		if rErr != nil{
+			hrErrMsg := fmt.Sprintf("unable to read db for key <%v> namepsace <%v> set <%v>. err <%v>", accountId, aKey.Namespace(), aKey.SetName(), rErr)
+			logger.Errorf(hrErrMsg)
 			ctx.JSON(http.StatusInternalServerError, gin.H{
-				"error":              err,
+				"error":              kErr,
 				"humanReadableError": hrErrMsg,
 			})
+			return
 		}
 
-		view := record.ToRecordViewV1()
-
+		//Return view
+		view := (*rec).ToRecordViewV1()
 		ctx.JSON(http.StatusOK, view)
 	}
-}
-
-func recordExists(logger *logrus.Logger, aeroClient *access.ASClient, key string) (bool, *aerospike.Key, error) {
-	logger.Debugf("Checking if key <%v> exists", key)
-
-	////Create aerospike key to check
-	//key, err := aerospike.NewKey(aeroClient.AccountNamespace, client.SetMetadata.SetName, id)
-	//if err != nil {
-	//	logger.Errorf("Unexpected error when creating new key <%v>", key)
-	//	return true, key, err
-	//}
-	//
-	////Check if key exists. Use nil policy because no timeout is required
-	//exists, kerr := aeroClient.Client.Exists(nil, key)
-	//if kerr != nil {
-	//	logger.Error("Error when checking if key exists", kerr)
-	//	return true, key, kerr
-	//}
-	//logger.Debugf("key: %v exists:%v", key, exists)
-	return false, nil, nil
-}
-
-//assumes valid account
-func getAccount(logger *logrus.Logger, aeroClient *access.ASClient, key string) (*record.RecordV1, bool, error) {
-
-	logger.Debug("Creating account record")
-
-	return &record.RecordV1{}, false, nil
 }

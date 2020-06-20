@@ -42,9 +42,9 @@ func New(logger *logrus.Logger, conf config.AerospikeCfg) (*ASClient, error) {
 }
 
 func (a *ASClient) GetWriter() DbWriter {
-	return NewAerospikeWriter(a)
+	return newAerospikeWriter(a)
 }
 
 func (a *ASClient) GetReader() DbReader {
-	return NewAerospikeReader(a)
+	return newAerospikeReader(a)
 }
