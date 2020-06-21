@@ -41,6 +41,10 @@ func New(logger *logrus.Logger, conf config.AerospikeCfg) (*ASClient, error) {
 	}, nil
 }
 
+func getAerospikeClient(host string, port, retryTimes int, retryInterval float32){
+
+}
+
 func (a *ASClient) GetWriter() DbWriter {
 	return newAerospikeWriter(a)
 }

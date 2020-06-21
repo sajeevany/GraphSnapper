@@ -7,10 +7,12 @@ import (
 )
 
 type AerospikeCfg struct {
-	Host             string             `json:"host"`
-	Port             int                `json:"port"`
-	Password         string             `json:"password"`
-	AccountNamespace AerospikeNamespace `json:"accountNamespace"`
+	Host                      string             `json:"host"`
+	Port                      int                `json:"port"`
+	Password                  string             `json:"password"`
+	ConnectionRetries         int                `json:"connectionRetries"`
+	ConnectionRetryIntervalMS int                `json:"connectionRetryIntervalMS"`
+	AccountNamespace          AerospikeNamespace `json:"accountNamespace"`
 }
 
 func (as AerospikeCfg) GetFields() logrus.Fields {
@@ -26,40 +28,49 @@ func (as AerospikeCfg) GetFields() logrus.Fields {
 //Inputs:
 //    currentPath - json path defined up and including this attribute. ie conf.Aero
 //    invalidArgs - map of invalid arguments mapped to their invalid reasons
-func (as AerospikeCfg) IsValid(logger *logrus.Logger, currentPath string, invalidArgs map[string]string) bool {
+func (as AerospikeCfg) IsValid(currentPath string, invalidArgs map[string]string) bool {
 
 	isValid := true
 
 	//Check attributes
 	if as.Host == "" {
-		AddInvalidArg(currentPath, "Host", as.Host, invalidArgs)
+		AddInvalidArgWithCause(currentPath, "Host", as.Host, "value is empty", invalidArgs)
 		isValid = false
 	}
 
 	if as.Port <= 0 || as.Port > 65535 {
-		AddInvalidArg(currentPath, "Port", strconv.Itoa(as.Port), invalidArgs)
+		AddInvalidArgWithCause(currentPath, "Port", strconv.Itoa(as.Port), "value is 0, negative or greater than 65535",invalidArgs)
 		isValid = false
 	}
 
+	if as.ConnectionRetries <= 0 {
+		AddInvalidArgWithCause(currentPath, "ConnectionRetries", strconv.Itoa(as.ConnectionRetries), "value is negative", invalidArgs)
+	}
+
+	if as.ConnectionRetryIntervalMS < 0 || as.ConnectionRetryIntervalMS > 10000 {
+		AddInvalidArgWithCause(currentPath, "ConnectionRetries", strconv.Itoa(as.ConnectionRetries), "value is negative or exceeds maximum of 10000 milliseconds", invalidArgs)
+	}
+
 	//Validate namespace requirements
-	if !isAccountNSValid(logger, as.AccountNamespace, currentPath, invalidArgs) {
+	if !isAccountNSValid(as.AccountNamespace, currentPath, invalidArgs) {
 		isValid = false
 	}
 
 	return isValid
 }
 
-func isAccountNSValid(logger *logrus.Logger, as AerospikeNamespace, currentPath string, invalidArgs map[string]string) bool {
+
+func isAccountNSValid(as AerospikeNamespace, currentPath string, invalidArgs map[string]string) bool {
 	isValid := true
 
 	//Check for uninitialzied account namespace
 	if (as == AerospikeNamespace{}) {
-		AddInvalidArg(currentPath, "AccountNamespace", "", invalidArgs)
+		AddInvalidArgWithCause(currentPath, "AccountNamespace", "", "Value is not defined", invalidArgs)
 		return false
 	}
 
 	//Check for invalid account namespace details
-	if !as.isValid(logger, fmt.Sprintf("%s.%s", currentPath, "AccountNamespace"), invalidArgs) {
+	if !as.IsValid(fmt.Sprintf("%s.%s", currentPath, "AccountNamespace"), invalidArgs) {
 		isValid = false
 	}
 	return isValid
@@ -77,13 +88,13 @@ func (as AerospikeNamespace) GetFields() logrus.Fields {
 	}
 }
 
-func (as AerospikeNamespace) isValid(logger *logrus.Logger, currentPath string, invalidArgs map[string]string) bool {
+func (as AerospikeNamespace) IsValid(currentPath string, invalidArgs map[string]string) bool {
 
 	isValid := true
 
 	//Check attributes
 	if as.Namespace == "" {
-		AddInvalidArg(currentPath, "namespace", as.Namespace, invalidArgs)
+		AddInvalidArgWithCause(currentPath, "Namespace", as.Namespace, "value is empty", invalidArgs)
 		isValid = false
 	}
 

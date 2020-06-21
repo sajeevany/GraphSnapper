@@ -13,6 +13,7 @@ require (
 	github.com/google/go-cmp v0.4.1 // indirect
 	github.com/json-iterator/go v1.1.10 // indirect
 	github.com/mailru/easyjson v0.7.1 // indirect
+	github.com/mitchellh/mapstructure v1.3.2
 	github.com/onsi/ginkgo v1.12.3 // indirect
 	github.com/sirupsen/logrus v1.6.0
 	github.com/swaggo/gin-swagger v1.2.0

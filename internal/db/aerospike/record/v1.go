@@ -13,6 +13,10 @@ const (
 	VersionAttrName    = "Version"
 )
 
+const (
+	VersionLevel_1 = "1"
+)
+
 type Record interface {
 	GetFields() logrus.Fields
 	ToASBinSlice() []*aerospike.Bin

@@ -1,6 +1,7 @@
 package record
 
 import (
+	"fmt"
 	"github.com/aerospike/aerospike-client-go"
 	"github.com/sirupsen/logrus"
 )
@@ -22,11 +23,12 @@ func GetVersion(logger *logrus.Logger, aeroRecord aerospike.BinMap) string {
 
 	//Get version value
 	switch v := mdBin.(type) {
-	case map[string]string:
-		logger.Debug("Bin map is [str]str. Returning v[Version]")
-		return v[VersionAttrName]
+	case map[interface{}]interface{}:
+		version := fmt.Sprintf("%s", v[VersionAttrName])
+		logger.Debugf("Bin map is [interface]interface. Returning <%v>", version)
+		return version
 	default:
-		logger.Debug("Bin map is not [str]str. Returning empty")
+		logger.Debugf("Bin map is of unsupported type <%T>. Returning empty", v)
 		return ""
 	}
 

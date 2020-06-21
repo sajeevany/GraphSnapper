@@ -3,12 +3,13 @@ package access
 import (
 	"fmt"
 	"github.com/aerospike/aerospike-client-go"
+	"github.com/mitchellh/mapstructure"
 	"github.com/sajeevany/graphSnapper/internal/db/aerospike/record"
 	"strings"
 )
 
 type DbReader interface {
-	ReadRecord(key *aerospike.Key) (*record.Record, error)
+	ReadRecord(key *aerospike.Key) (record.Record, error)
 	KeyExists(key string) (bool, *aerospike.Key, error)
 }
 
@@ -23,7 +24,7 @@ type AerospikeReader struct {
 }
 
 //KeyExists - Returns true if key exists, with aerospike key and any error that occurs
-func (a *AerospikeReader) KeyExists(keyStr string) (bool, *aerospike.Key, error){
+func (a *AerospikeReader) KeyExists(keyStr string) (bool, *aerospike.Key, error) {
 
 	logger := a.asClient.Logger
 	logger.Debugf("Checking if key <%v> exists", keyStr)
@@ -46,7 +47,7 @@ func (a *AerospikeReader) KeyExists(keyStr string) (bool, *aerospike.Key, error)
 	return exists, key, nil
 }
 
-func (a *AerospikeReader) ReadRecord(key *aerospike.Key) (*record.Record, error) {
+func (a *AerospikeReader) ReadRecord(key *aerospike.Key) (record.Record, error) {
 
 	logger := a.asClient.Logger
 	aeroClient := a.asClient.Client
@@ -54,33 +55,37 @@ func (a *AerospikeReader) ReadRecord(key *aerospike.Key) (*record.Record, error)
 	//Get bin map for key
 	logger.Debugf("Starting read record for key <%v>", key.String())
 	aRecord, rErr := aeroClient.Get(a.asClient.ReadPolicy, key)
-	if rErr != nil{
+	if rErr != nil {
 		logger.Errorf("Error when running client.Get operation for key <%v> err <%v>", key.String(), rErr)
 	}
 
 	//Get version
 	version := record.GetVersion(logger, aRecord.Bins)
 
-	switch strings.ToLower(version){
-	case "" :
+	switch strings.ToLower(version) {
+	case "":
 		vErr := fmt.Errorf("record does not have metadata.version set")
 		return nil, vErr
-	case "1":
+	case record.VersionLevel_1:
 		rec, cErr := readV1Record(aRecord.Bins)
-		if cErr != nil{
+		if cErr != nil {
 			logger.Errorf("Error converting bin map <%v> to record. err <%v>", aRecord.Bins, cErr)
 			return nil, cErr
 		}
-		logger.Info("It worked")
 		return rec, nil
 	default:
-		vErr := fmt.Errorf("record is unsupported version <%v>. update library", version )
+		vErr := fmt.Errorf("record is unsupported version <%v>. update library", version)
 		logger.Error(vErr)
 		return nil, vErr
 	}
 }
 
-func readV1Record(bm aerospike.BinMap) (*record.Record, error){
+func readV1Record(bm aerospike.BinMap) (record.Record, error) {
 
-		return nil, nil
+	var rec record.RecordV1
+	if cErr := mapstructure.Decode(bm, &rec); cErr != nil {
+		return nil, cErr
+	}
+
+	return &rec, nil
 }

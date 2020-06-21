@@ -16,7 +16,7 @@ func (l Logging) GetFields() logrus.Fields {
 //Inputs:
 //    currentPath - json path defined up and including this attribute. ie conf.Aero
 //    invalidArgs - map of invalid arguments (currentPath + field name) mapped to invalid reasons
-func (l Logging) IsValid(logger *logrus.Logger, currentPath string, invalidArgs map[string]string) bool {
+func (l Logging) IsValid(currentPath string, invalidArgs map[string]string) bool {
 
 	isValid := true
 

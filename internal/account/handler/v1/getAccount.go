@@ -54,14 +54,14 @@ func GetAccountV1(logger *logrus.Logger, aeroClient *access.ASClient) gin.Handle
 			hrErrMsg := fmt.Sprintf("unable to read db for key <%v> namespace <%v> set <%v>. err <%v>", accountId, aKey.Namespace(), aKey.SetName(), rErr)
 			logger.Errorf(hrErrMsg)
 			ctx.JSON(http.StatusInternalServerError, gin.H{
-				"error":              kErr,
+				"error":              rErr,
 				"humanReadableError": hrErrMsg,
 			})
 			return
 		}
 
 		//Return view
-		view := (*rec).ToRecordViewV1()
+		view := rec.ToRecordViewV1()
 		ctx.JSON(http.StatusOK, view)
 	}
 }

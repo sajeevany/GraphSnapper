@@ -3,6 +3,8 @@
     "host": "nosql",
     "port": 3000,
     "password": "",
+    "connectionRetries": 3,
+    "connectionRetryIntervalMS": 10,
     "accountNamespace": {
       "namespace": "test",
       "setName" : "account"

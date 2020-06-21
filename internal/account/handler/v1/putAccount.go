@@ -93,7 +93,7 @@ func newAccountRecordV1(key string, account view.AccountViewV1) record.RecordV1 
 			PrimaryKey: key,
 			LastUpdate: now,
 			CreateTime: now,
-			Version: record.V1RecordLevel,
+			Version:    record.V1RecordLevel,
 		},
 		Account: record.Account{
 			Email: account.Email,
