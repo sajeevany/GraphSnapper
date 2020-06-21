@@ -5,6 +5,7 @@ import (
 	"github.com/aerospike/aerospike-client-go"
 	"github.com/sajeevany/graphSnapper/internal/config"
 	"github.com/sirupsen/logrus"
+	"time"
 )
 
 type AerospikeClient interface {
@@ -23,7 +24,8 @@ type ASClient struct {
 //New - Returns ASClinet built from config
 func New(logger *logrus.Logger, conf config.AerospikeCfg) (*ASClient, error) {
 
-	client, err := aerospike.NewClient(conf.Host, conf.Port)
+	logger.Debug("Starting aerospike client creation")
+	client, err := getAerospikeClient(logger, conf.Host, conf.Port, conf.ConnectionRetries, conf.ConnectionRetryIntervalMS)
 	if err != nil {
 		msg := fmt.Sprintf("Unexpected error when creating aerospike client, <%v> with config.", err)
 		logger.WithFields(conf.GetFields()).Error(msg)
@@ -41,8 +43,35 @@ func New(logger *logrus.Logger, conf config.AerospikeCfg) (*ASClient, error) {
 	}, nil
 }
 
-func getAerospikeClient(host string, port, retryTimes int, retryInterval float32){
+func getAerospikeClient(logger *logrus.Logger, host string, port, retryTimes int, retryIntervalMilliseconds int) (*aerospike.Client, error){
 
+	var client *aerospike.Client
+	var err error
+
+	//Will attempt to get client at least once
+	retryTimes = 1 + abs(retryTimes)
+	retryInterval := time.Duration(retryIntervalMilliseconds) * time.Millisecond
+
+	for i:=0; i<retryTimes; i++{
+		logger.Debugf("Connection creation attempt #<%v>", i)
+		client, err = aerospike.NewClient(host, port)
+		if err == nil{
+			return client, err
+		}
+		//pause between client fetch times
+		time.Sleep(retryInterval)
+		retryIntervalMilliseconds = retryIntervalMilliseconds * retryIntervalMilliseconds
+	}
+
+	logger.Debug("Out of retry attempts ")
+	return client, err
+}
+
+func abs(x int) int{
+	if x < 0 {
+		return -x
+	}
+	return x
 }
 
 func (a *ASClient) GetWriter() DbWriter {

@@ -37,7 +37,7 @@ func GetVersion(logger *logrus.Logger, aeroRecord aerospike.BinMap) string {
 func hasMetadataBin(logger *logrus.Logger, aeroRecord aerospike.BinMap) bool {
 
 	if aeroRecord == nil {
-		logger.Debug("Aerospike record is empty. Returning false for hahasMetadataBins")
+		logger.Debug("Aerospike record is empty. Returning false for hasMetadataBin")
 		return false
 	}
 

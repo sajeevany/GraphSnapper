@@ -4,7 +4,7 @@
     "port": 3000,
     "password": "",
     "connectionRetries": 3,
-    "connectionRetryIntervalMS": 10,
+    "connectionRetryIntervalMS": 100,
     "accountNamespace": {
       "namespace": "test",
       "setName" : "account"
