@@ -3,9 +3,9 @@ package v1
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/sajeevany/graphSnapper/internal/db/aerospike/access"
-	"github.com/sajeevany/graphSnapper/internal/db/aerospike/record"
-	"github.com/sajeevany/graphSnapper/internal/db/aerospike/view"
+	"github.com/sajeevany/graph-snapper/internal/db/aerospike/access"
+	"github.com/sajeevany/graph-snapper/internal/db/aerospike/record"
+	"github.com/sajeevany/graph-snapper/internal/db/aerospike/view"
 	"github.com/sirupsen/logrus"
 	"net/http"
 	"time"

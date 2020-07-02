@@ -2,7 +2,7 @@ package record
 
 import (
 	"github.com/aerospike/aerospike-client-go"
-	"github.com/sajeevany/graphSnapper/internal/db/aerospike/view"
+	"github.com/sajeevany/graph-snapper/internal/db/aerospike/view"
 	"github.com/sirupsen/logrus"
 )
 
@@ -116,6 +116,7 @@ func (c Credentials) GetFields() logrus.Fields {
 
 //DBGrafanaUser - Database entry for a GrafanaUser
 type DBGrafanaUser struct {
+	URL         string
 	APIKey      string
 	Description string
 }

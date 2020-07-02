@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/aerospike/aerospike-client-go"
 	"github.com/mitchellh/mapstructure"
-	"github.com/sajeevany/graphSnapper/internal/db/aerospike/record"
+	"github.com/sajeevany/graph-snapper/internal/db/aerospike/record"
 	"strings"
 )
 

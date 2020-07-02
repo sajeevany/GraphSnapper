@@ -1,4 +1,4 @@
-module github.com/sajeevany/graphSnapper
+module github.com/sajeevany/graph-snapper
 
 go 1.13
 
@@ -15,6 +15,7 @@ require (
 	github.com/mailru/easyjson v0.7.1 // indirect
 	github.com/mitchellh/mapstructure v1.3.2
 	github.com/onsi/ginkgo v1.12.3 // indirect
+	github.com/sajeevany/graph-snapper v0.0.0-20200621184223-eb59974bbefd
 	github.com/sirupsen/logrus v1.6.0
 	github.com/swaggo/gin-swagger v1.2.0
 	github.com/swaggo/swag v1.6.7

@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/sajeevany/graphSnapper/internal/logging"
+	"github.com/sajeevany/graph-snapper/internal/logging"
 	"github.com/sirupsen/logrus"
 )
 

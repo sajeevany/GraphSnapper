@@ -16,11 +16,11 @@ func AddInvalidArg(currentPath, fieldName, val string, invalidArgs map[string]st
 	invalidArgs[path] = fmt.Sprintf("<%v> field is using an invalid value <%v>", fieldName, val)
 }
 
-func AddInvalidArgWithCause(currentPath, fieldName, val, cause string, invalidArgs map[string]string){
+func AddInvalidArgWithCause(currentPath, fieldName, val, cause string, invalidArgs map[string]string) {
 	path := concatTag(currentPath, fieldName)
-	if cause == ""{
+	if cause == "" {
 		invalidArgs[path] = fmt.Sprintf("<%v> field is using an invalid value <%v>", fieldName, val)
-	}else {
+	} else {
 		invalidArgs[path] = fmt.Sprintf("<%v> field is using an invalid value <%v>. invalid because <%v>", fieldName, val, cause)
 	}
 }

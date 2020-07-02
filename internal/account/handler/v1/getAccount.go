@@ -3,7 +3,7 @@ package v1
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/sajeevany/graphSnapper/internal/db/aerospike/access"
+	"github.com/sajeevany/graph-snapper/internal/db/aerospike/access"
 	"github.com/sirupsen/logrus"
 	"net/http"
 )

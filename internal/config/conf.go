@@ -7,13 +7,13 @@ type Conf struct {
 	Logging   Logging      `json:"logging"`
 }
 
-func NewConfWithDefaults() Conf{
+func NewConfWithDefaults() Conf {
 	return Conf{
 		Aerospike: AerospikeCfg{
 			ConnectionRetries:         3,
 			ConnectionRetryIntervalMS: 10,
 		},
-		Logging:   Logging{
+		Logging: Logging{
 			Level: "debug",
 		},
 	}

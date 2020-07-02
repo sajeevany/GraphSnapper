@@ -58,9 +58,9 @@ func TestAerospikePortfolioConfig_AddInvalidArg(t *testing.T) {
 			setup: setup{
 				jsonPath: "conf.aerospike.AccountNamespace",
 				asConf: AerospikeNamespace{
-						Namespace: "", // Cannot be empty
-						SetName:   "blah",
-					},
+					Namespace: "", // Cannot be empty
+					SetName:   "blah",
+				},
 			},
 		},
 		{
@@ -96,14 +96,14 @@ func TestAerospikePortfolioConfig_AddInvalidArg(t *testing.T) {
 		}
 
 		//Compare map size to invalid arg keys
-		if len(invalidArgs) != len(sExpect.invalidArgs){
-			t.Errorf("Expected number of invalid arguments <%v> to match expected number of invalid args <%v>. Expected <%v> Actual <%v>",  len(sExpect.invalidArgs), len(invalidArgs), sExpect.invalidArgs, invalidArgs)
+		if len(invalidArgs) != len(sExpect.invalidArgs) {
+			t.Errorf("Expected number of invalid arguments <%v> to match expected number of invalid args <%v>. Expected <%v> Actual <%v>", len(sExpect.invalidArgs), len(invalidArgs), sExpect.invalidArgs, invalidArgs)
 			t.Fail()
 		}
 
 		//Iterate over expected invalid keys and assert that they exist in map
-		for _, v := range sExpect.invalidArgs{
-			if _, exists := invalidArgs[v]; !exists{
+		for _, v := range sExpect.invalidArgs {
+			if _, exists := invalidArgs[v]; !exists {
 				t.Errorf("Expected arg <%v> in <%v> but was not found", v, invalidArgs)
 				t.FailNow()
 			}

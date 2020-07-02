@@ -4,18 +4,18 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/sajeevany/graphSnapper/internal/account/handler/v1"
-	"github.com/sajeevany/graphSnapper/internal/config"
-	"github.com/sajeevany/graphSnapper/internal/credentials"
-	"github.com/sajeevany/graphSnapper/internal/db/aerospike/access"
-	"github.com/sajeevany/graphSnapper/internal/health"
-	"github.com/sajeevany/graphSnapper/internal/logging"
-	"github.com/sajeevany/graphSnapper/internal/logging/middleware"
+	"github.com/sajeevany/graph-snapper/internal/account/handler/v1"
+	"github.com/sajeevany/graph-snapper/internal/config"
+	"github.com/sajeevany/graph-snapper/internal/credentials"
+	"github.com/sajeevany/graph-snapper/internal/db/aerospike/access"
+	"github.com/sajeevany/graph-snapper/internal/health"
+	"github.com/sajeevany/graph-snapper/internal/logging"
+	"github.com/sajeevany/graph-snapper/internal/logging/middleware"
 	"github.com/sirupsen/logrus"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/swaggo/gin-swagger/swaggerFiles"
 
-	_ "github.com/sajeevany/graphSnapper/docs"
+	_ "github.com/sajeevany/graph-snapper/docs"
 )
 
 const v1Api = "/api/v1"
@@ -32,7 +32,7 @@ func main() {
 	logger.SetLevel(logrus.DebugLevel)
 
 	//Read configuration file
-	confFP := "/app/config/graphSnapper-conf.json"
+	confFP := "/app/config/graph-snapper-conf.json"
 	conf, isValid, invalidArgs := readConf(logger, confFP)
 	if !isValid {
 		if prettyIA, err := json.MarshalIndent(invalidArgs, "", "\t"); err != nil {

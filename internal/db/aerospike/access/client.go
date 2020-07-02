@@ -3,7 +3,7 @@ package access
 import (
 	"fmt"
 	"github.com/aerospike/aerospike-client-go"
-	"github.com/sajeevany/graphSnapper/internal/config"
+	"github.com/sajeevany/graph-snapper/internal/config"
 	"github.com/sirupsen/logrus"
 	"time"
 )
@@ -43,7 +43,7 @@ func New(logger *logrus.Logger, conf config.AerospikeCfg) (*ASClient, error) {
 	}, nil
 }
 
-func getAerospikeClient(logger *logrus.Logger, host string, port, retryTimes int, retryIntervalMilliseconds int) (*aerospike.Client, error){
+func getAerospikeClient(logger *logrus.Logger, host string, port, retryTimes int, retryIntervalMilliseconds int) (*aerospike.Client, error) {
 
 	var client *aerospike.Client
 	var err error
@@ -52,10 +52,10 @@ func getAerospikeClient(logger *logrus.Logger, host string, port, retryTimes int
 	retryTimes = 1 + abs(retryTimes)
 	retryInterval := time.Duration(retryIntervalMilliseconds) * time.Millisecond
 
-	for i:=0; i<retryTimes; i++{
+	for i := 0; i < retryTimes; i++ {
 		logger.Debugf("Connection creation attempt #<%v>", i)
 		client, err = aerospike.NewClient(host, port)
-		if err == nil{
+		if err == nil {
 			return client, err
 		}
 		//pause between client fetch times
@@ -67,7 +67,7 @@ func getAerospikeClient(logger *logrus.Logger, host string, port, retryTimes int
 	return client, err
 }
 
-func abs(x int) int{
+func abs(x int) int {
 	if x < 0 {
 		return -x
 	}
