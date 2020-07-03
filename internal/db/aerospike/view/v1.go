@@ -17,7 +17,7 @@ type MetadataView1 struct {
 	PrimaryKey    string `json:"PrimaryKey"`
 	LastUpdate    string `json:"LastUpdate"`
 	CreateTimeUTC string `json:"CreateTimeUTC"`
-	Version       string `json:Version`
+	Version       string `json:"Version"`
 }
 
 //AccountViewV1 - Creation account details
