@@ -10,7 +10,7 @@ import (
 const Group = "/credentials"
 const CheckCredentialsEndpoint = "check"
 
-//@Summary Check credentials for validaty
+//@Summary Check credentials for validity
 //@Description Non-authenticated endpoint Check credentials for validity. Returns an array of user objects with check result
 //@Produce json
 //@Param credentials body Credentials true "Check credentials"
@@ -32,19 +32,37 @@ func CheckV1(logger *logrus.Logger) gin.HandlerFunc {
 		}
 
 		//Validate credentials
-		result, err := validateCredentials(creds)
-		if err != nil{
+		result, err := validateCredentials(logger, creds)
+		if err != nil {
 			msg := fmt.Sprintf("Error validating credentials. <%v>", err)
 			logger.Errorf(msg)
 			ctx.JSON(http.StatusInternalServerError, msg)
 			return
 		}
 
-		ctx.JSON(http.StatusOK,result)
+		ctx.JSON(http.StatusOK, result)
 	}
 }
 
-func validateCredentials(creds Credentials) (CredentialsCheck, error){
+func validateCredentials(logger *logrus.Logger, creds Credentials) (CredentialsCheck, error) {
 
-	return CredentialsCheck{}, nil
+	logger.Debug("Started credentials validation")
+	result := CredentialsCheck{}
+
+	//Check grafana users
+	if len(creds.GrafanaReadUsers) != 0 {
+		gc, err := authGrafanaUsers(logger, creds.GrafanaReadUsers)
+		if err != nil {
+			logger.Errorf("Internal error when authenticating grafana users. <%v>", err)
+			return result, err
+		}
+		result.GrafanaReadUserCheck = gc
+	}
+
+	//Check confluence users
+	if len(creds.ConfluenceServerUsers) != 0 {
+
+	}
+
+	return result, nil
 }
