@@ -94,7 +94,7 @@ func setupRouter(logger *logrus.Logger) *gin.Engine {
 func setupV1Routes(rtr *gin.Engine, logger *logrus.Logger, aeroClient *access.ASClient) {
 	addHealthEndpoints(rtr, logger)
 	addAccountEndpoints(rtr, logger, aeroClient)
-	addCredentialsEndpoints(rtr, logger, aeroClient)
+	addCredentialsEndpoints(rtr, logger)
 }
 
 func addHealthEndpoints(rtr *gin.Engine, logger *logrus.Logger) {
@@ -112,9 +112,9 @@ func addAccountEndpoints(rtr *gin.Engine, logger *logrus.Logger, aeroClient *acc
 	}
 }
 
-func addCredentialsEndpoints(rtr *gin.Engine, logger *logrus.Logger, aeroClient *access.ASClient) {
+func addCredentialsEndpoints(rtr *gin.Engine, logger *logrus.Logger) {
 	v1Api := rtr.Group(fmt.Sprintf("%s%s", v1Api, credentials.Group))
 	{
-		v1Api.POST(credentials.URL, credentials.CheckV1(logger))
+		v1Api.POST(credentials.CheckCredentialsEndpoint, credentials.CheckV1(logger))
 	}
 }

@@ -160,7 +160,7 @@ paths:
       parameters:
       - description: Check credentials
         in: body
-        name: account
+        name: credentials
         required: true
         schema:
           $ref: '#/definitions/credentials.Credentials'
@@ -173,7 +173,7 @@ paths:
             $ref: '#/definitions/credentials.CredentialsCheck'
       summary: Check credentials for validaty
       tags:
-      - account
+      - credentials
   /health/hello:
     get:
       description: Non-authenticated endpoint that returns 200 with hello message. Used to validate that the service is responsive.

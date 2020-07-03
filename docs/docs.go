@@ -99,13 +99,13 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "account"
+                    "credentials"
                 ],
                 "summary": "Check credentials for validaty",
                 "parameters": [
                     {
                         "description": "Check credentials",
-                        "name": "account",
+                        "name": "credentials",
                         "in": "body",
                         "required": true,
                         "schema": {

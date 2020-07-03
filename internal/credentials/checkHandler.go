@@ -8,16 +8,16 @@ import (
 )
 
 const Group = "/credentials"
-const URL = "check"
+const CheckCredentialsEndpoint = "check"
 
 //@Summary Check credentials for validaty
 //@Description Non-authenticated endpoint Check credentials for validity. Returns an array of user objects with check result
 //@Produce json
-//@Param account body Credentials true "Check credentials"
+//@Param credentials body Credentials true "Check credentials"
 //@Success 200 {object} CredentialsCheck
 //@Fail 400 {object} gin.H
 //@Router /credentials [post]
-//@Tags account
+//@Tags credentials
 func CheckV1(logger *logrus.Logger) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		logger.Debug("Received check credentials request")
