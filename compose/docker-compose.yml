@@ -11,7 +11,7 @@ services:
     depends_on:
       - nosql
     ports:
-      - "80:8080"
+      - "70:8080"
   nosql:
     ulimits:
       nofile: 90000

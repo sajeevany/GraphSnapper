@@ -1,20 +1,58 @@
 basePath: /api/v1
 definitions:
-  credentials.GrafanaDbUser:
+  credentials.ConfluenceServerUser:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  credentials.ConfluenceUserCheck:
+    properties:
+      Cause:
+        type: string
+      password:
+        type: string
+      result:
+        type: boolean
+      username:
+        type: string
+    type: object
+  credentials.Credentials:
+    properties:
+      confluenceServerUsers:
+        items:
+          $ref: '#/definitions/credentials.ConfluenceServerUser'
+        type: array
+      grafanaReadUsers:
+        items:
+          $ref: '#/definitions/credentials.GrafanaReadUser'
+        type: array
+    type: object
+  credentials.CredentialsCheck:
+    properties:
+      confluenceServerUserCheck:
+        items:
+          $ref: '#/definitions/credentials.ConfluenceUserCheck'
+        type: array
+      grafanaReadUserCheck:
+        items:
+          $ref: '#/definitions/credentials.GrafanaReadUserCheck'
+        type: array
+    type: object
+  credentials.GrafanaReadUser:
     properties:
       apikey:
         type: string
-      description:
-        type: string
-      key:
-        type: string
     type: object
-  credentials.StoredUsers:
+  credentials.GrafanaReadUserCheck:
     properties:
-      grafanaUsers:
-        items:
-          $ref: '#/definitions/credentials.GrafanaDbUser'
-        type: array
+      Cause:
+        type: string
+      apikey:
+        type: string
+      result:
+        type: boolean
     type: object
   health.Ping:
     properties:
@@ -50,7 +88,7 @@ definitions:
         type: string
       PrimaryKey:
         type: string
-      version:
+      Version:
         type: string
     type: object
   view.RecordViewV1:
@@ -73,7 +111,7 @@ info:
   title: Graph Snapper API
   version: "1.0"
 paths:
-  /account/:id:
+  /account/{id}:
     get:
       description: Non-authenticated endpoint fetches account at specified key
       parameters:
@@ -116,25 +154,26 @@ paths:
       summary: Create account record
       tags:
       - account
-  /credentials/:accountId/batch:
+  /credentials:
     post:
-      description: Non-authenticated endpoint which stores the provided credentials credentials owned by a specified account. Verifies connectivity before storing in Aerospike
+      description: Non-authenticated endpoint Check credentials for validity. Returns an array of user objects with check result
       parameters:
-      - description: Account ID
-        in: path
-        name: accountId
+      - description: Check credentials
+        in: body
+        name: account
         required: true
-        type: string
+        schema:
+          $ref: '#/definitions/credentials.Credentials'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/credentials.StoredUsers'
-      summary: Create users endpoint
+            $ref: '#/definitions/credentials.CredentialsCheck'
+      summary: Check credentials for validaty
       tags:
-      - credentials
+      - account
   /health/hello:
     get:
       description: Non-authenticated endpoint that returns 200 with hello message. Used to validate that the service is responsive.

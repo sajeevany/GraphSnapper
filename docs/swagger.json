@@ -11,7 +11,7 @@
     },
     "basePath": "/api/v1",
     "paths": {
-        "/account/:id": {
+        "/account/{id}": {
             "get": {
                 "description": "Non-authenticated endpoint fetches account at specified key",
                 "produces": [
@@ -76,30 +76,32 @@
                 }
             }
         },
-        "/credentials/:accountId/batch": {
+        "/credentials": {
             "post": {
-                "description": "Non-authenticated endpoint which stores the provided credentials credentials owned by a specified account. Verifies connectivity before storing in Aerospike",
+                "description": "Non-authenticated endpoint Check credentials for validity. Returns an array of user objects with check result",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "credentials"
+                    "account"
                 ],
-                "summary": "Create users endpoint",
+                "summary": "Check credentials for validaty",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "Account ID",
-                        "name": "accountId",
-                        "in": "path",
-                        "required": true
+                        "description": "Check credentials",
+                        "name": "account",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/credentials.Credentials"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/credentials.StoredUsers"
+                            "$ref": "#/definitions/credentials.CredentialsCheck"
                         }
                     }
                 }
@@ -127,28 +129,87 @@
         }
     },
     "definitions": {
-        "credentials.GrafanaDbUser": {
+        "credentials.ConfluenceServerUser": {
             "type": "object",
             "properties": {
-                "apikey": {
+                "password": {
                     "type": "string"
                 },
-                "description": {
-                    "type": "string"
-                },
-                "key": {
+                "username": {
                     "type": "string"
                 }
             }
         },
-        "credentials.StoredUsers": {
+        "credentials.ConfluenceUserCheck": {
             "type": "object",
             "properties": {
-                "grafanaUsers": {
+                "Cause": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "boolean"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "credentials.Credentials": {
+            "type": "object",
+            "properties": {
+                "confluenceServerUsers": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/credentials.GrafanaDbUser"
+                        "$ref": "#/definitions/credentials.ConfluenceServerUser"
                     }
+                },
+                "grafanaReadUsers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/credentials.GrafanaReadUser"
+                    }
+                }
+            }
+        },
+        "credentials.CredentialsCheck": {
+            "type": "object",
+            "properties": {
+                "confluenceServerUserCheck": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/credentials.ConfluenceUserCheck"
+                    }
+                },
+                "grafanaReadUserCheck": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/credentials.GrafanaReadUserCheck"
+                    }
+                }
+            }
+        },
+        "credentials.GrafanaReadUser": {
+            "type": "object",
+            "properties": {
+                "apikey": {
+                    "type": "string"
+                }
+            }
+        },
+        "credentials.GrafanaReadUserCheck": {
+            "type": "object",
+            "properties": {
+                "Cause": {
+                    "type": "string"
+                },
+                "apikey": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "boolean"
                 }
             }
         },
@@ -204,7 +265,7 @@
                 "PrimaryKey": {
                     "type": "string"
                 },
-                "version": {
+                "Version": {
                     "type": "string"
                 }
             }
