@@ -11,9 +11,9 @@ func Init() *logrus.Logger {
 }
 
 //Returns values as a redacted string if non empty
-func RedactNonEmpty(val string) string{
+func RedactNonEmpty(val string) string {
 
-	if val != ""{
+	if val != "" {
 		return "*****"
 	}
 

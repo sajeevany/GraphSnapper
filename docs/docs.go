@@ -27,7 +27,7 @@ var doc = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/account/{id}": {
+        "/account/:id": {
             "get": {
                 "description": "Non-authenticated endpoint fetches account at specified key",
                 "produces": [
@@ -94,6 +94,37 @@ var doc = `{
         },
         "/credentials": {
             "post": {
+                "description": "Non-authenticated endpoint that adds grafana and confluence-server users to an account. Assumes entries are pre-validated",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "credentials"
+                ],
+                "summary": "Add credentials to an account",
+                "parameters": [
+                    {
+                        "description": "Add credentials",
+                        "name": "account",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/credentials.AddCredentialsV1"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/credentials.AddedCredentialsV1"
+                        }
+                    }
+                }
+            }
+        },
+        "/credentials/check": {
+            "post": {
                 "description": "Non-authenticated endpoint Check credentials for validity. Returns an array of user objects with check result",
                 "produces": [
                     "application/json"
@@ -109,7 +140,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/credentials.Credentials"
+                            "$ref": "#/definitions/credentials.CheckCredentialsV1"
                         }
                     }
                 ],
@@ -117,7 +148,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/credentials.CredentialsCheck"
+                            "$ref": "#/definitions/credentials.CheckCredentialsResultV1"
                         }
                     }
                 }
@@ -145,7 +176,7 @@ var doc = `{
         }
     },
     "definitions": {
-        "credentials.ConfluenceServerUser": {
+        "credentials.AddConfluenceServerUserV1": {
             "type": "object",
             "properties": {
                 "host": {
@@ -162,7 +193,78 @@ var doc = `{
                 }
             }
         },
-        "credentials.ConfluenceUserCheck": {
+        "credentials.AddCredentialsV1": {
+            "type": "object",
+            "properties": {
+                "ConfluenceServerUsers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/credentials.AddConfluenceServerUserV1"
+                    }
+                },
+                "GrafanaReadUsers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/credentials.AddGrafanaReadUserV1"
+                    }
+                },
+                "accountID": {
+                    "type": "string"
+                }
+            }
+        },
+        "credentials.AddGrafanaReadUserV1": {
+            "type": "object",
+            "properties": {
+                "apikey": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "host": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "integer"
+                }
+            }
+        },
+        "credentials.AddedCredentialsV1": {
+            "type": "object",
+            "properties": {
+                "ConfluenceServerUsers": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/credentials.AddConfluenceServerUserV1"
+                    }
+                },
+                "GrafanaReadUsers": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/credentials.AddGrafanaReadUserV1"
+                    }
+                }
+            }
+        },
+        "credentials.CheckConfluenceServerUserV1": {
+            "type": "object",
+            "properties": {
+                "host": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "credentials.CheckConfluenceUserResultV1": {
             "type": "object",
             "properties": {
                 "Cause": {
@@ -185,55 +287,41 @@ var doc = `{
                 }
             }
         },
-        "credentials.Credentials": {
-            "type": "object",
-            "properties": {
-                "confluenceServerUsers": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/credentials.ConfluenceServerUser"
-                    }
-                },
-                "grafanaReadUsers": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/credentials.GrafanaReadUser"
-                    }
-                }
-            }
-        },
-        "credentials.CredentialsCheck": {
+        "credentials.CheckCredentialsResultV1": {
             "type": "object",
             "properties": {
                 "confluenceServerUserCheck": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/credentials.ConfluenceUserCheck"
+                        "$ref": "#/definitions/credentials.CheckConfluenceUserResultV1"
                     }
                 },
                 "grafanaReadUserCheck": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/credentials.GrafanaReadUserCheck"
+                        "$ref": "#/definitions/credentials.CheckGrafanaReadUserResultV1"
                     }
                 }
             }
         },
-        "credentials.GrafanaReadUser": {
+        "credentials.CheckCredentialsV1": {
             "type": "object",
             "properties": {
-                "apikey": {
-                    "type": "string"
+                "confluenceServerUsers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/credentials.CheckConfluenceServerUserV1"
+                    }
                 },
-                "host": {
-                    "type": "string"
-                },
-                "port": {
-                    "type": "integer"
+                "grafanaReadUsers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/credentials.CheckGrafanaReadUserV1"
+                    }
                 }
             }
         },
-        "credentials.GrafanaReadUserCheck": {
+        "credentials.CheckGrafanaReadUserResultV1": {
             "type": "object",
             "properties": {
                 "Cause": {
@@ -250,6 +338,20 @@ var doc = `{
                 },
                 "result": {
                     "type": "boolean"
+                }
+            }
+        },
+        "credentials.CheckGrafanaReadUserV1": {
+            "type": "object",
+            "properties": {
+                "apikey": {
+                    "type": "string"
+                },
+                "host": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "integer"
                 }
             }
         },

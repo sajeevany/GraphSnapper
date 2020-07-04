@@ -1,6 +1,6 @@
 basePath: /api/v1
 definitions:
-  credentials.ConfluenceServerUser:
+  credentials.AddConfluenceServerUserV1:
     properties:
       host:
         type: string
@@ -11,7 +11,53 @@ definitions:
       username:
         type: string
     type: object
-  credentials.ConfluenceUserCheck:
+  credentials.AddCredentialsV1:
+    properties:
+      ConfluenceServerUsers:
+        items:
+          $ref: '#/definitions/credentials.AddConfluenceServerUserV1'
+        type: array
+      GrafanaReadUsers:
+        items:
+          $ref: '#/definitions/credentials.AddGrafanaReadUserV1'
+        type: array
+      accountID:
+        type: string
+    type: object
+  credentials.AddGrafanaReadUserV1:
+    properties:
+      apikey:
+        type: string
+      description:
+        type: string
+      host:
+        type: string
+      port:
+        type: integer
+    type: object
+  credentials.AddedCredentialsV1:
+    properties:
+      ConfluenceServerUsers:
+        additionalProperties:
+          $ref: '#/definitions/credentials.AddConfluenceServerUserV1'
+        type: object
+      GrafanaReadUsers:
+        additionalProperties:
+          $ref: '#/definitions/credentials.AddGrafanaReadUserV1'
+        type: object
+    type: object
+  credentials.CheckConfluenceServerUserV1:
+    properties:
+      host:
+        type: string
+      password:
+        type: string
+      port:
+        type: integer
+      username:
+        type: string
+    type: object
+  credentials.CheckConfluenceUserResultV1:
     properties:
       Cause:
         type: string
@@ -26,38 +72,29 @@ definitions:
       username:
         type: string
     type: object
-  credentials.Credentials:
-    properties:
-      confluenceServerUsers:
-        items:
-          $ref: '#/definitions/credentials.ConfluenceServerUser'
-        type: array
-      grafanaReadUsers:
-        items:
-          $ref: '#/definitions/credentials.GrafanaReadUser'
-        type: array
-    type: object
-  credentials.CredentialsCheck:
+  credentials.CheckCredentialsResultV1:
     properties:
       confluenceServerUserCheck:
         items:
-          $ref: '#/definitions/credentials.ConfluenceUserCheck'
+          $ref: '#/definitions/credentials.CheckConfluenceUserResultV1'
         type: array
       grafanaReadUserCheck:
         items:
-          $ref: '#/definitions/credentials.GrafanaReadUserCheck'
+          $ref: '#/definitions/credentials.CheckGrafanaReadUserResultV1'
         type: array
     type: object
-  credentials.GrafanaReadUser:
+  credentials.CheckCredentialsV1:
     properties:
-      apikey:
-        type: string
-      host:
-        type: string
-      port:
-        type: integer
+      confluenceServerUsers:
+        items:
+          $ref: '#/definitions/credentials.CheckConfluenceServerUserV1'
+        type: array
+      grafanaReadUsers:
+        items:
+          $ref: '#/definitions/credentials.CheckGrafanaReadUserV1'
+        type: array
     type: object
-  credentials.GrafanaReadUserCheck:
+  credentials.CheckGrafanaReadUserResultV1:
     properties:
       Cause:
         type: string
@@ -69,6 +106,15 @@ definitions:
         type: integer
       result:
         type: boolean
+    type: object
+  credentials.CheckGrafanaReadUserV1:
+    properties:
+      apikey:
+        type: string
+      host:
+        type: string
+      port:
+        type: integer
     type: object
   health.Ping:
     properties:
@@ -127,7 +173,7 @@ info:
   title: Graph Snapper API
   version: "1.0"
 paths:
-  /account/{id}:
+  /account/:id:
     get:
       description: Non-authenticated endpoint fetches account at specified key
       parameters:
@@ -172,6 +218,26 @@ paths:
       - account
   /credentials:
     post:
+      description: Non-authenticated endpoint that adds grafana and confluence-server users to an account. Assumes entries are pre-validated
+      parameters:
+      - description: Add credentials
+        in: body
+        name: account
+        required: true
+        schema:
+          $ref: '#/definitions/credentials.AddCredentialsV1'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/credentials.AddedCredentialsV1'
+      summary: Add credentials to an account
+      tags:
+      - credentials
+  /credentials/check:
+    post:
       description: Non-authenticated endpoint Check credentials for validity. Returns an array of user objects with check result
       parameters:
       - description: Check credentials
@@ -179,14 +245,14 @@ paths:
         name: credentials
         required: true
         schema:
-          $ref: '#/definitions/credentials.Credentials'
+          $ref: '#/definitions/credentials.CheckCredentialsV1'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/credentials.CredentialsCheck'
+            $ref: '#/definitions/credentials.CheckCredentialsResultV1'
       summary: Check credentials for validity
       tags:
       - credentials

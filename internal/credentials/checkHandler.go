@@ -13,18 +13,18 @@ const CheckCredentialsEndpoint = "check"
 //@Summary Check credentials for validity
 //@Description Non-authenticated endpoint Check credentials for validity. Returns an array of user objects with check result
 //@Produce json
-//@Param credentials body Credentials true "Check credentials"
-//@Success 200 {object} CredentialsCheck
+//@Param credentials body CheckCredentialsV1 true "Check credentials"
+//@Success 200 {object} CheckCredentialsResultV1
 //@Fail 400 {object} gin.H
 //@Fail 500 {object} gin.H
-//@Router /credentials [post]
+//@Router /credentials/check [post]
 //@Tags credentials
 func CheckV1(logger *logrus.Logger) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		logger.Debug("Received check credentials request")
 
 		//Bind credentials object
-		var creds Credentials
+		var creds CheckCredentialsV1
 		if bErr := ctx.BindJSON(&creds); bErr != nil {
 			msg := fmt.Sprintf("Unable to bind request body to credentials object %v", bErr)
 			logger.Errorf(msg)
@@ -45,10 +45,10 @@ func CheckV1(logger *logrus.Logger) gin.HandlerFunc {
 	}
 }
 
-func validateCredentials(logger *logrus.Logger, creds Credentials) (CredentialsCheck, error) {
+func validateCredentials(logger *logrus.Logger, creds CheckCredentialsV1) (CheckCredentialsResultV1, error) {
 
 	logger.Debug("Started credentials validation")
-	result := CredentialsCheck{}
+	result := CheckCredentialsResultV1{}
 
 	//Check grafana users
 	if len(creds.GrafanaReadUsers) != 0 {

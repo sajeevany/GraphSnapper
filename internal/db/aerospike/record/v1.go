@@ -25,9 +25,9 @@ type Record interface {
 
 //Record - Aerospike configuration + credentials data
 type RecordV1 struct {
-	Metadata    Metadata
-	Account     Account
-	Credentials Credentials
+	Metadata    MetadataV1    `json:"Metadata"`
+	Account     AccountV1     `json:"Account"`
+	Credentials CredentialsV1 `json:"Credentials"`
 }
 
 func (r RecordV1) ToRecordViewV1() view.RecordViewV1 {
@@ -38,15 +38,15 @@ func (r RecordV1) ToRecordViewV1() view.RecordViewV1 {
 	}
 }
 
-//Metadata - Record metadata
-type Metadata struct {
+//MetadataV1 - Record metadata
+type MetadataV1 struct {
 	PrimaryKey string
 	LastUpdate string
 	CreateTime string
 	Version    string
 }
 
-func (m Metadata) toMetadataView1() view.MetadataView1 {
+func (m MetadataV1) toMetadataView1() view.MetadataView1 {
 	return view.MetadataView1{
 		PrimaryKey:    m.PrimaryKey,
 		LastUpdate:    m.LastUpdate,
@@ -55,7 +55,7 @@ func (m Metadata) toMetadataView1() view.MetadataView1 {
 	}
 }
 
-func (m Metadata) GetFields() logrus.Fields {
+func (m MetadataV1) GetFields() logrus.Fields {
 	return logrus.Fields{
 		"PrimaryKey": m.PrimaryKey,
 		"LastUpdate": m.LastUpdate,
@@ -64,31 +64,31 @@ func (m Metadata) GetFields() logrus.Fields {
 }
 
 //Owner - Creation account details for grouping/fetch
-type Account struct {
+type AccountV1 struct {
 	Email string
 	Alias string
 }
 
-func (a Account) toAccountView1() view.AccountViewV1 {
+func (a AccountV1) toAccountView1() view.AccountViewV1 {
 	return view.AccountViewV1{
 		Email: a.Email,
 		Alias: a.Alias,
 	}
 }
 
-func (a Account) GetFields() logrus.Fields {
+func (a AccountV1) GetFields() logrus.Fields {
 	return logrus.Fields{
 		"Email": a.Email,
 		"Alias": a.Alias,
 	}
 }
 
-//Credentials - Credentials for various graph and storage services
-type Credentials struct {
+//CredentialsV1 - CredentialsV1 for various graph and storage services
+type CredentialsV1 struct {
 	GrafanaUsers map[string]DBGrafanaUser
 }
 
-func (c Credentials) toCredentialsView1() view.CredentialsView1 {
+func (c CredentialsV1) toCredentialsView1() view.CredentialsView1 {
 	cv := view.CredentialsView1{
 		GrafanaUsers: make(map[string]view.GrafanaUser, len(c.GrafanaUsers)),
 	}
@@ -102,7 +102,7 @@ func (c Credentials) toCredentialsView1() view.CredentialsView1 {
 	return cv
 }
 
-func (c Credentials) GetFields() logrus.Fields {
+func (c CredentialsV1) GetFields() logrus.Fields {
 	//Add Grafana user creds
 	gFields := logrus.Fields{}
 	for i, v := range c.GrafanaUsers {
@@ -116,23 +116,26 @@ func (c Credentials) GetFields() logrus.Fields {
 
 //DBGrafanaUser - Database entry for a GrafanaUser
 type DBGrafanaUser struct {
-	URL         string
 	APIKey      string
+	Host        string
+	Port        int
 	Description string
 }
 
 func (u DBGrafanaUser) GetFields() logrus.Fields {
 	return logrus.Fields{
 		"APIKey":      u.APIKey,
+		"Host":        u.Host,
+		"Port":        u.Port,
 		"Description": u.Description,
 	}
 }
 
 func (r RecordV1) GetFields() logrus.Fields {
 	return logrus.Fields{
-		"Metadata":    r.Metadata.GetFields(),
-		"Account":     r.Account.GetFields(),
-		"Credentials": r.Credentials.GetFields(),
+		"MetadataV1":    r.Metadata.GetFields(),
+		"AccountV1":     r.Account.GetFields(),
+		"CredentialsV1": r.Credentials.GetFields(),
 	}
 }
 
@@ -144,7 +147,7 @@ func (r RecordV1) ToASBinSlice() []*aerospike.Bin {
 	}
 }
 
-func (m Metadata) getMetadataBin() *aerospike.Bin {
+func (m MetadataV1) getMetadataBin() *aerospike.Bin {
 	return aerospike.NewBin(
 		MetadataBinName,
 		map[string]string{
@@ -155,7 +158,7 @@ func (m Metadata) getMetadataBin() *aerospike.Bin {
 		})
 }
 
-func (a Account) getAccountBin() *aerospike.Bin {
+func (a AccountV1) getAccountBin() *aerospike.Bin {
 	return aerospike.NewBin(
 		AccountBinName,
 		map[string]string{
@@ -164,7 +167,7 @@ func (a Account) getAccountBin() *aerospike.Bin {
 		})
 }
 
-func (c Credentials) getCredentialBin() *aerospike.Bin {
+func (c CredentialsV1) getCredentialBin() *aerospike.Bin {
 
 	//Create grafana users bin map
 	grafanaUsersBinMap := make(map[string]interface{})

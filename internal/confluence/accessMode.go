@@ -10,7 +10,7 @@ import (
 
 const AccessModeURL = "/rest/api/accessmode"
 
-func HasWriteAccess(logger *logrus.Logger, host string, port int, user, password string)(bool, error){
+func HasWriteAccess(logger *logrus.Logger, host string, port int, user, password string) (bool, error) {
 
 	logger.Debug("Starting valid login API key check")
 
@@ -79,5 +79,5 @@ func respHasWrite(resp *http.Response) (bool, error) {
 	body := strings.ToLower(string(bodyBytes))
 	hasWAccess := strings.Contains(body, "write")
 
-	return hasWAccess,  nil
+	return hasWAccess, nil
 }

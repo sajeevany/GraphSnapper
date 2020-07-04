@@ -5,20 +5,20 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-//Credentials - Set of credentials to be validated
-type Credentials struct {
-	GrafanaReadUsers      []GrafanaReadUser
-	ConfluenceServerUsers []ConfluenceServerUser
+//CheckCredentialsV1 - Set of credentials to be validated
+type CheckCredentialsV1 struct {
+	GrafanaReadUsers      []CheckGrafanaReadUserV1
+	ConfluenceServerUsers []CheckConfluenceServerUserV1
 }
 
 //GrafanaUser - Grafana user with read access
-type GrafanaReadUser struct {
+type CheckGrafanaReadUserV1 struct {
 	APIKey string
 	Host   string
 	Port   int
 }
 
-func (u GrafanaReadUser) GetFields() logrus.Fields {
+func (u CheckGrafanaReadUserV1) GetFields() logrus.Fields {
 	return logrus.Fields{
 		"APIKey": logging.RedactNonEmpty(u.APIKey),
 		"Host":   u.Host,
@@ -26,43 +26,41 @@ func (u GrafanaReadUser) GetFields() logrus.Fields {
 	}
 }
 
-//GrafanaUser - Grafana user with read access
-type ConfluenceServerUser struct {
+//CheckConfluenceServerUserV1 - confluence user with write access
+type CheckConfluenceServerUserV1 struct {
 	Username string
 	Password string
 	Host     string
 	Port     int
 }
 
-func (u ConfluenceServerUser) GetFields() logrus.Fields {
+func (u CheckConfluenceServerUserV1) GetFields() logrus.Fields {
 
 	//Redact user and password fields if they have been set
 	return logrus.Fields{
 		"Username": logging.RedactNonEmpty(u.Username),
 		"Password": logging.RedactNonEmpty(u.Password),
-		"Host": u.Host,
-		"Port": u.Port,
+		"Host":     u.Host,
+		"Port":     u.Port,
 	}
 }
 
-
-
-//CredentialsCheck - Check credentials result
-type CredentialsCheck struct {
-	GrafanaReadUserCheck      []GrafanaReadUserCheck
-	ConfluenceServerUserCheck []ConfluenceUserCheck
+//CheckCredentialsResultV1 - Check credentials result
+type CheckCredentialsResultV1 struct {
+	GrafanaReadUserCheck      []CheckGrafanaReadUserResultV1
+	ConfluenceServerUserCheck []CheckConfluenceUserResultV1
 }
 
-//GrafanaReadUserCheck - Grafana read user check result
-type GrafanaReadUserCheck struct {
+//CheckGrafanaReadUserResultV1 - Grafana read user check result
+type CheckGrafanaReadUserResultV1 struct {
 	Result bool
 	Cause  string `json:"Cause,omitempty"`
-	GrafanaReadUser
+	CheckGrafanaReadUserV1
 }
 
-//ConfluenceUserCheck - Confluence write user check result
-type ConfluenceUserCheck struct {
+//CheckConfluenceUserResultV1 - Confluence write user check result
+type CheckConfluenceUserResultV1 struct {
 	Result bool
 	Cause  string `json:"Cause,omitempty"`
-	ConfluenceServerUser
+	CheckConfluenceServerUserV1
 }

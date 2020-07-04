@@ -42,7 +42,7 @@ func IsValidLogin(logger *logrus.Logger, apiKey, host string, port int) (bool, e
 		logger.Debugf("Unauthorized (401) response body <%v>", resp.Body)
 		return false, nil
 	default:
-		logger.Debug("Unexpected response status code <%v>", resp.StatusCode)
+		logger.Debugf("Unexpected response status code <%v>", resp.StatusCode)
 		return false, nil
 	}
 }

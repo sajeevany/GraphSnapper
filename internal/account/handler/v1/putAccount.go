@@ -12,7 +12,7 @@ import (
 )
 
 const Group = "/account"
-const PutAccountEndpoint = "/{id}"
+const PutAccountEndpoint = "/:id"
 
 //@Summary Create account record
 //@Description Non-authenticated endpoint creates an empty record at the specified key. Overwrites any record that already exists
@@ -20,8 +20,8 @@ const PutAccountEndpoint = "/{id}"
 //@Param id path string true "id"
 //@Param account body view.AccountViewV1 true "Create account"
 //@Success 200 {string} string "ok"
-//@Fail 400 {object} gin.H
-//@Router /account/{id} [put]
+//@Fail 404 {object} gin.H
+//@Router /account/:id [put]
 //@Tags account
 func PutAccountV1(logger *logrus.Logger, aeroClient *access.ASClient) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
@@ -89,16 +89,16 @@ func createAccount(logger *logrus.Logger, aeroClient *access.ASClient, key strin
 func newAccountRecordV1(key string, account view.AccountViewV1) record.RecordV1 {
 	now := time.Now().UTC().String()
 	return record.RecordV1{
-		Metadata: record.Metadata{
+		Metadata: record.MetadataV1{
 			PrimaryKey: key,
 			LastUpdate: now,
 			CreateTime: now,
 			Version:    record.V1RecordLevel,
 		},
-		Account: record.Account{
+		Account: record.AccountV1{
 			Email: account.Email,
 			Alias: account.Alias,
 		},
-		Credentials: record.Credentials{},
+		Credentials: record.CredentialsV1{},
 	}
 }

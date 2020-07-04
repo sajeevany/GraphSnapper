@@ -72,6 +72,7 @@ func (a *AerospikeReader) ReadRecord(key *aerospike.Key) (record.Record, error) 
 			logger.Errorf("Error converting bin map <%v> to record. err <%v>", aRecord.Bins, cErr)
 			return nil, cErr
 		}
+		logger.WithFields(rec.GetFields()).Debugf("Returning v1 record")
 		return rec, nil
 	default:
 		vErr := fmt.Errorf("record is unsupported version <%v>. update library", version)
