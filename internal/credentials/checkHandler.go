@@ -61,7 +61,12 @@ func validateCredentials(logger *logrus.Logger, creds Credentials) (CredentialsC
 
 	//Check confluence users
 	if len(creds.ConfluenceServerUsers) != 0 {
-
+		cc, err := authConfluenceUsers(logger, creds.ConfluenceServerUsers)
+		if err != nil {
+			logger.Errorf("Internal error when authenticating confluence users. <%v>", err)
+			return result, err
+		}
+		result.ConfluenceServerUserCheck = cc
 	}
 
 	return result, nil

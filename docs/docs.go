@@ -101,7 +101,7 @@ var doc = `{
                 "tags": [
                     "credentials"
                 ],
-                "summary": "Check credentials for validaty",
+                "summary": "Check credentials for validity",
                 "parameters": [
                     {
                         "description": "Check credentials",
@@ -148,8 +148,14 @@ var doc = `{
         "credentials.ConfluenceServerUser": {
             "type": "object",
             "properties": {
+                "host": {
+                    "type": "string"
+                },
                 "password": {
                     "type": "string"
+                },
+                "port": {
+                    "type": "integer"
                 },
                 "username": {
                     "type": "string"
@@ -162,8 +168,14 @@ var doc = `{
                 "Cause": {
                     "type": "string"
                 },
+                "host": {
+                    "type": "string"
+                },
                 "password": {
                     "type": "string"
+                },
+                "port": {
+                    "type": "integer"
                 },
                 "result": {
                     "type": "boolean"
@@ -212,6 +224,12 @@ var doc = `{
             "properties": {
                 "apikey": {
                     "type": "string"
+                },
+                "host": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "integer"
                 }
             }
         },
@@ -223,6 +241,12 @@ var doc = `{
                 },
                 "apikey": {
                     "type": "string"
+                },
+                "host": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "integer"
                 },
                 "result": {
                     "type": "boolean"

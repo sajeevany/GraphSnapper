@@ -1,6 +1,9 @@
 package credentials
 
-import "github.com/sirupsen/logrus"
+import (
+	"github.com/sajeevany/graph-snapper/internal/logging"
+	"github.com/sirupsen/logrus"
+)
 
 //Credentials - Set of credentials to be validated
 type Credentials struct {
@@ -17,7 +20,7 @@ type GrafanaReadUser struct {
 
 func (u GrafanaReadUser) GetFields() logrus.Fields {
 	return logrus.Fields{
-		"APIKey": u.APIKey,
+		"APIKey": logging.RedactNonEmpty(u.APIKey),
 		"Host":   u.Host,
 		"Port":   u.Port,
 	}
@@ -30,6 +33,19 @@ type ConfluenceServerUser struct {
 	Host     string
 	Port     int
 }
+
+func (u ConfluenceServerUser) GetFields() logrus.Fields {
+
+	//Redact user and password fields if they have been set
+	return logrus.Fields{
+		"Username": logging.RedactNonEmpty(u.Username),
+		"Password": logging.RedactNonEmpty(u.Password),
+		"Host": u.Host,
+		"Port": u.Port,
+	}
+}
+
+
 
 //CredentialsCheck - Check credentials result
 type CredentialsCheck struct {

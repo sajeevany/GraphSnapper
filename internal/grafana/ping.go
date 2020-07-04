@@ -30,14 +30,16 @@ func IsValidLogin(logger *logrus.Logger, apiKey, host string, port int) (bool, e
 		logger.Debugf("Error when calling request to <%v>. err <%v>", reqURL, err)
 		return false, rErr
 	}
-	logger.Debug("login API request executed")
+	logger.Debug("login API request executed. Checking status code.")
+	defer resp.Body.Close()
 
 	//Check response
 	switch resp.StatusCode {
 	case http.StatusOK:
+		logger.Debug("grafana user check returned 200")
 		return true, nil
 	case http.StatusUnauthorized:
-		logger.Debugf("Unauthorized response body <%v>", resp.Body)
+		logger.Debugf("Unauthorized (401) response body <%v>", resp.Body)
 		return false, fmt.Errorf("unauthorized")
 	default:
 		logger.Debug("Unexpected response status code <%v>", resp.StatusCode)

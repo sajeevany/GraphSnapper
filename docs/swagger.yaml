@@ -2,8 +2,12 @@ basePath: /api/v1
 definitions:
   credentials.ConfluenceServerUser:
     properties:
+      host:
+        type: string
       password:
         type: string
+      port:
+        type: integer
       username:
         type: string
     type: object
@@ -11,8 +15,12 @@ definitions:
     properties:
       Cause:
         type: string
+      host:
+        type: string
       password:
         type: string
+      port:
+        type: integer
       result:
         type: boolean
       username:
@@ -44,6 +52,10 @@ definitions:
     properties:
       apikey:
         type: string
+      host:
+        type: string
+      port:
+        type: integer
     type: object
   credentials.GrafanaReadUserCheck:
     properties:
@@ -51,6 +63,10 @@ definitions:
         type: string
       apikey:
         type: string
+      host:
+        type: string
+      port:
+        type: integer
       result:
         type: boolean
     type: object
@@ -171,7 +187,7 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/credentials.CredentialsCheck'
-      summary: Check credentials for validaty
+      summary: Check credentials for validity
       tags:
       - credentials
   /health/hello:

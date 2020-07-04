@@ -85,7 +85,7 @@
                 "tags": [
                     "credentials"
                 ],
-                "summary": "Check credentials for validaty",
+                "summary": "Check credentials for validity",
                 "parameters": [
                     {
                         "description": "Check credentials",
@@ -132,8 +132,14 @@
         "credentials.ConfluenceServerUser": {
             "type": "object",
             "properties": {
+                "host": {
+                    "type": "string"
+                },
                 "password": {
                     "type": "string"
+                },
+                "port": {
+                    "type": "integer"
                 },
                 "username": {
                     "type": "string"
@@ -146,8 +152,14 @@
                 "Cause": {
                     "type": "string"
                 },
+                "host": {
+                    "type": "string"
+                },
                 "password": {
                     "type": "string"
+                },
+                "port": {
+                    "type": "integer"
                 },
                 "result": {
                     "type": "boolean"
@@ -196,6 +208,12 @@
             "properties": {
                 "apikey": {
                     "type": "string"
+                },
+                "host": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "integer"
                 }
             }
         },
@@ -207,6 +225,12 @@
                 },
                 "apikey": {
                     "type": "string"
+                },
+                "host": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "integer"
                 },
                 "result": {
                     "type": "boolean"
