@@ -16,6 +16,7 @@ const CheckCredentialsEndpoint = "check"
 //@Param credentials body Credentials true "Check credentials"
 //@Success 200 {object} CredentialsCheck
 //@Fail 400 {object} gin.H
+//@Fail 500 {object} gin.H
 //@Router /credentials [post]
 //@Tags credentials
 func CheckV1(logger *logrus.Logger) gin.HandlerFunc {
@@ -36,7 +37,7 @@ func CheckV1(logger *logrus.Logger) gin.HandlerFunc {
 		if err != nil {
 			msg := fmt.Sprintf("Error validating credentials. <%v>", err)
 			logger.Errorf(msg)
-			ctx.JSON(http.StatusInternalServerError, msg)
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": msg})
 			return
 		}
 

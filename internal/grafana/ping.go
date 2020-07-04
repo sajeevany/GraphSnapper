@@ -40,7 +40,7 @@ func IsValidLogin(logger *logrus.Logger, apiKey, host string, port int) (bool, e
 		return true, nil
 	case http.StatusUnauthorized:
 		logger.Debugf("Unauthorized (401) response body <%v>", resp.Body)
-		return false, fmt.Errorf("unauthorized")
+		return false, nil
 	default:
 		logger.Debug("Unexpected response status code <%v>", resp.StatusCode)
 		return false, nil

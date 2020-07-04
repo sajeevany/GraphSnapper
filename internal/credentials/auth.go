@@ -40,7 +40,7 @@ func authenticateGrafanaUser(logger *logrus.Logger, gu GrafanaReadUser) (Grafana
 	}else{
 		return GrafanaReadUserCheck{
 			Result:          false,
-			Cause:           "Not validated",
+			Cause:           "Unauthorized. Received 401.",
 			GrafanaReadUser: gu,
 		}, nil
 	}
