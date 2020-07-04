@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/sajeevany/graph-snapper/internal/account/handler/v1"
+	"github.com/sajeevany/graph-snapper/internal/account"
 	"github.com/sajeevany/graph-snapper/internal/config"
 	"github.com/sajeevany/graph-snapper/internal/credentials"
-	"github.com/sajeevany/graph-snapper/internal/db/aerospike/access"
+	"github.com/sajeevany/graph-snapper/internal/db/aerospike"
 	"github.com/sajeevany/graph-snapper/internal/health"
 	"github.com/sajeevany/graph-snapper/internal/logging"
 	"github.com/sajeevany/graph-snapper/internal/logging/middleware"
@@ -43,7 +43,7 @@ func main() {
 	}
 
 	//Get aerospike client
-	aeroClient, err := access.New(logger, conf.Aerospike)
+	aeroClient, err := aerospike.New(logger, conf.Aerospike)
 	if err != nil {
 		logger.WithFields(conf.Aerospike.GetFields()).Fatalf("Failed to create Aerospike client using client. Error : <%v>", err)
 	}
@@ -91,7 +91,7 @@ func setupRouter(logger *logrus.Logger) *gin.Engine {
 	return engine
 }
 
-func setupV1Routes(rtr *gin.Engine, logger *logrus.Logger, aeroClient *access.ASClient) {
+func setupV1Routes(rtr *gin.Engine, logger *logrus.Logger, aeroClient *aerospike.ASClient) {
 	addHealthEndpoints(rtr, logger)
 	addAccountEndpoints(rtr, logger, aeroClient)
 	addCredentialsEndpoints(rtr, logger)
@@ -104,11 +104,11 @@ func addHealthEndpoints(rtr *gin.Engine, logger *logrus.Logger) {
 	}
 }
 
-func addAccountEndpoints(rtr *gin.Engine, logger *logrus.Logger, aeroClient *access.ASClient) {
-	v1Api := rtr.Group(fmt.Sprintf("%s%s", v1Api, v1.Group))
+func addAccountEndpoints(rtr *gin.Engine, logger *logrus.Logger, aeroClient *aerospike.ASClient) {
+	v1Api := rtr.Group(fmt.Sprintf("%s%s", v1Api, account.Group))
 	{
-		v1Api.PUT(v1.PutAccountEndpoint, v1.PutAccountV1(logger, aeroClient))
-		v1Api.GET(v1.GetAccountEndpoint, v1.GetAccountV1(logger, aeroClient))
+		v1Api.PUT(account.PutAccountEndpoint, account.PutAccountV1(logger, aeroClient))
+		v1Api.GET(account.GetAccountEndpoint, account.GetAccountV1(logger, aeroClient))
 	}
 }
 

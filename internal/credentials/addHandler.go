@@ -2,7 +2,7 @@ package credentials
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/sajeevany/graph-snapper/internal/db/aerospike/access"
+	"github.com/sajeevany/graph-snapper/internal/db/aerospike"
 	"github.com/sirupsen/logrus"
 )
 
@@ -17,7 +17,7 @@ const PostCredentialsEndpoint = "/{accountID}"
 //@Fail 500 {object} gin.H
 //@Router /credentials [post]
 //@Tags credentials
-func PostCredentialsV1(logger *logrus.Logger, aeroClient *access.ASClient) gin.HandlerFunc {
+func PostCredentialsV1(logger *logrus.Logger, aeroClient *aerospike.ASClient) gin.HandlerFunc {
 	return func(context *gin.Context) {
 
 	}

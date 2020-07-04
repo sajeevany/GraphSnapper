@@ -1,5 +1,5 @@
 # graph-snapper
-Tool which calls snapshot APIs on a defined cadence and stores them within the desired data storage platform.
+Tool which takes snapshots of desired dashboards/graphs and stores them in the specified document store. Intended to capture Grafana data and store it in Confluence.
 
 Generate swagger files:
 
@@ -13,6 +13,10 @@ Access swagger API:
 Run unit tests:
 
     go test -short ./...
+    
+Run unit and integration(requires docker):
+
+    go test ./...
     
 Build image:
     

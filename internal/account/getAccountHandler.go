@@ -1,9 +1,9 @@
-package v1
+package account
 
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/sajeevany/graph-snapper/internal/db/aerospike/access"
+	"github.com/sajeevany/graph-snapper/internal/db/aerospike"
 	"github.com/sirupsen/logrus"
 	"net/http"
 )
@@ -14,11 +14,11 @@ const GetAccountEndpoint = "/:id"
 //@Description Non-authenticated endpoint fetches account at specified key
 //@Produce json
 //@Param id path string true "id"
-//@Success 200 {object} view.RecordViewV1
+//@Success 200 {object} aerospike.RecordViewV1
 //@Fail 404 {object} gin.H
 //@Router /account/:id [get]
 //@Tags account
-func GetAccountV1(logger *logrus.Logger, aeroClient *access.ASClient) gin.HandlerFunc {
+func GetAccountV1(logger *logrus.Logger, aeroClient *aerospike.ASClient) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
 		//Validate that id parameter has been set

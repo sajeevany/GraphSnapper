@@ -1,8 +1,7 @@
-package record
+package aerospike
 
 import (
 	"github.com/aerospike/aerospike-client-go"
-	"github.com/sajeevany/graph-snapper/internal/db/aerospike/view"
 	"github.com/sirupsen/logrus"
 )
 
@@ -20,7 +19,7 @@ const (
 type Record interface {
 	GetFields() logrus.Fields
 	ToASBinSlice() []*aerospike.Bin
-	ToRecordViewV1() view.RecordViewV1
+	ToRecordViewV1() RecordViewV1
 }
 
 //Record - Aerospike configuration + credentials data
@@ -30,8 +29,8 @@ type RecordV1 struct {
 	Credentials CredentialsV1 `json:"Credentials"`
 }
 
-func (r RecordV1) ToRecordViewV1() view.RecordViewV1 {
-	return view.RecordViewV1{
+func (r RecordV1) ToRecordViewV1() RecordViewV1 {
+	return RecordViewV1{
 		Metadata:    r.Metadata.toMetadataView1(),
 		Account:     r.Account.toAccountView1(),
 		Credentials: r.Credentials.toCredentialsView1(),
@@ -46,8 +45,8 @@ type MetadataV1 struct {
 	Version    string
 }
 
-func (m MetadataV1) toMetadataView1() view.MetadataView1 {
-	return view.MetadataView1{
+func (m MetadataV1) toMetadataView1() MetadataViewV1 {
+	return MetadataViewV1{
 		PrimaryKey:    m.PrimaryKey,
 		LastUpdate:    m.LastUpdate,
 		CreateTimeUTC: m.CreateTime,
@@ -69,8 +68,8 @@ type AccountV1 struct {
 	Alias string
 }
 
-func (a AccountV1) toAccountView1() view.AccountViewV1 {
-	return view.AccountViewV1{
+func (a AccountV1) toAccountView1() AccountViewV1 {
+	return AccountViewV1{
 		Email: a.Email,
 		Alias: a.Alias,
 	}
@@ -88,13 +87,13 @@ type CredentialsV1 struct {
 	GrafanaUsers map[string]DBGrafanaUser
 }
 
-func (c CredentialsV1) toCredentialsView1() view.CredentialsView1 {
-	cv := view.CredentialsView1{
-		GrafanaUsers: make(map[string]view.GrafanaUser, len(c.GrafanaUsers)),
+func (c CredentialsV1) toCredentialsView1() CredentialsView1 {
+	cv := CredentialsView1{
+		GrafanaUsers: make(map[string]GrafanaUser, len(c.GrafanaUsers)),
 	}
 
 	for i, v := range c.GrafanaUsers {
-		cv.GrafanaUsers[i] = view.GrafanaUser{
+		cv.GrafanaUsers[i] = GrafanaUser{
 			Description: v.Description,
 		}
 	}

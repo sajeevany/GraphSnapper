@@ -1,4 +1,4 @@
-package view
+package aerospike
 
 import (
 	"fmt"
@@ -7,13 +7,13 @@ import (
 
 //RecordViewV1 - Aerospike configuration + credentials data
 type RecordViewV1 struct {
-	Metadata    MetadataView1    `json:"Metadata"`
+	Metadata    MetadataViewV1   `json:"Metadata"`
 	Account     AccountViewV1    `json:"Account"`
 	Credentials CredentialsView1 `json:"Credentials"`
 }
 
-//MetadataView1 - Record metadata
-type MetadataView1 struct {
+//MetadataViewV1 - Record metadata
+type MetadataViewV1 struct {
 	PrimaryKey    string `json:"PrimaryKey"`
 	LastUpdate    string `json:"LastUpdate"`
 	CreateTimeUTC string `json:"CreateTimeUTC"`
