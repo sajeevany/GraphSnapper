@@ -36,7 +36,7 @@ type GrafanaUser struct {
 	Description string `json:"Description"`
 }
 
-//IsValid - returns true i model is valid. Returns false if invalid and includes a non-nil error
+//IsValid - returns true if model is valid. Returns false if invalid and includes a non-nil error
 func (a AccountViewV1) IsValid() (bool, error) {
 
 	if a.Email == "" {

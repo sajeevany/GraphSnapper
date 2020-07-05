@@ -7,8 +7,11 @@ import (
 	"net/http"
 )
 
-const Group = "/credentials"
-const CheckCredentialsEndpoint = "check"
+const (
+	Group                    = "/credentials"
+	CheckCredentialsEndpoint = "check"
+	AddCredentialsEndpoint   = ""
+)
 
 //@Summary Check credentials for validity
 //@Description Non-authenticated endpoint Check credentials for validity. Returns an array of user objects with check result

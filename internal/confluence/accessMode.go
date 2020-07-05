@@ -38,13 +38,13 @@ func HasWriteAccess(logger *logrus.Logger, host string, port int, user, password
 		//Check if the resultant json string contains "write"
 		hasWAccess, err2 := respHasWrite(resp)
 		if err2 != nil {
-			logger.Debug("Error when reading response body <%v>, err <%v>", resp.Body, err2)
+			logger.Debugf("Error when reading response body <%v>, err <%v>", resp.Body, err2)
 			return hasWAccess, err2
 		}
 
 		return hasWAccess, nil
 	default:
-		logger.Debug("Unexpected response status code <%v>", resp.StatusCode)
+		logger.Debugf("Unexpected response status code <%v>", resp.StatusCode)
 		return false, nil
 	}
 

@@ -38,7 +38,7 @@ func (as AerospikeCfg) IsValid(currentPath string, invalidArgs map[string]string
 		isValid = false
 	}
 
-	if as.Port <= 0 || as.Port > 65535 {
+	if !IsPortValid(as.Port) {
 		AddInvalidArgWithCause(currentPath, "Port", strconv.Itoa(as.Port), "value is 0, negative or greater than 65535", invalidArgs)
 		isValid = false
 	}
@@ -57,6 +57,10 @@ func (as AerospikeCfg) IsValid(currentPath string, invalidArgs map[string]string
 	}
 
 	return isValid
+}
+
+func IsPortValid(port int) bool {
+	return port > 0 && port <= 65535
 }
 
 func isAccountNSValid(as AerospikeNamespace, currentPath string, invalidArgs map[string]string) bool {
