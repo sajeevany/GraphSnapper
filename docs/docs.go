@@ -50,7 +50,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/view.RecordViewV1"
+                            "$ref": "#/definitions/aerospike.RecordViewV1"
                         }
                     }
                 }
@@ -78,7 +78,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/view.AccountViewV1"
+                            "$ref": "#/definitions/aerospike.AccountViewV1"
                         }
                     }
                 ],
@@ -176,9 +176,77 @@ var doc = `{
         }
     },
     "definitions": {
+        "aerospike.AccountViewV1": {
+            "type": "object",
+            "properties": {
+                "Alias": {
+                    "description": "Optional arg. Won't be returned if missing.",
+                    "type": "string"
+                },
+                "Email": {
+                    "type": "string"
+                }
+            }
+        },
+        "aerospike.CredentialsView1": {
+            "type": "object",
+            "properties": {
+                "GrafanaUsers": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/aerospike.GrafanaUser"
+                    }
+                }
+            }
+        },
+        "aerospike.GrafanaUser": {
+            "type": "object",
+            "properties": {
+                "Description": {
+                    "type": "string"
+                }
+            }
+        },
+        "aerospike.MetadataViewV1": {
+            "type": "object",
+            "properties": {
+                "CreateTimeUTC": {
+                    "type": "string"
+                },
+                "LastUpdate": {
+                    "type": "string"
+                },
+                "PrimaryKey": {
+                    "type": "string"
+                },
+                "Version": {
+                    "type": "string"
+                }
+            }
+        },
+        "aerospike.RecordViewV1": {
+            "type": "object",
+            "properties": {
+                "Account": {
+                    "type": "object",
+                    "$ref": "#/definitions/aerospike.AccountViewV1"
+                },
+                "Credentials": {
+                    "type": "object",
+                    "$ref": "#/definitions/aerospike.CredentialsView1"
+                },
+                "Metadata": {
+                    "type": "object",
+                    "$ref": "#/definitions/aerospike.MetadataViewV1"
+                }
+            }
+        },
         "credentials.AddConfluenceServerUserV1": {
             "type": "object",
             "properties": {
+                "description": {
+                    "type": "string"
+                },
                 "host": {
                     "type": "string"
                 },
@@ -361,71 +429,6 @@ var doc = `{
                 "response": {
                     "type": "string",
                     "example": "hello"
-                }
-            }
-        },
-        "view.AccountViewV1": {
-            "type": "object",
-            "properties": {
-                "Alias": {
-                    "description": "Optional arg. Won't be returned if missing.",
-                    "type": "string"
-                },
-                "Email": {
-                    "type": "string"
-                }
-            }
-        },
-        "view.CredentialsView1": {
-            "type": "object",
-            "properties": {
-                "GrafanaUsers": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "$ref": "#/definitions/view.GrafanaUser"
-                    }
-                }
-            }
-        },
-        "view.GrafanaUser": {
-            "type": "object",
-            "properties": {
-                "Description": {
-                    "type": "string"
-                }
-            }
-        },
-        "view.MetadataView1": {
-            "type": "object",
-            "properties": {
-                "CreateTimeUTC": {
-                    "type": "string"
-                },
-                "LastUpdate": {
-                    "type": "string"
-                },
-                "PrimaryKey": {
-                    "type": "string"
-                },
-                "Version": {
-                    "type": "string"
-                }
-            }
-        },
-        "view.RecordViewV1": {
-            "type": "object",
-            "properties": {
-                "Account": {
-                    "type": "object",
-                    "$ref": "#/definitions/view.AccountViewV1"
-                },
-                "Credentials": {
-                    "type": "object",
-                    "$ref": "#/definitions/view.CredentialsView1"
-                },
-                "Metadata": {
-                    "type": "object",
-                    "$ref": "#/definitions/view.MetadataView1"
                 }
             }
         }
