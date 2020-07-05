@@ -62,19 +62,19 @@ func (ag AddGrafanaReadUserV1) IsValid() bool {
 
 //AddConfluenceServerUserV1 - confluence user with write access
 type AddConfluenceServerUserV1 struct {
-	Username string
-	Password string
-	Host     string
-	Port     int
+	Username    string
+	Password    string
+	Host        string
+	Port        int
 	Description string
 }
 
 func (ag AddConfluenceServerUserV1) GetFields() logrus.Fields {
 	return logrus.Fields{
-		"Username": logging.RedactNonEmpty(ag.Username),
-		"Password": logging.RedactNonEmpty(ag.Password),
-		"Host":     ag.Host,
-		"Port":     ag.Port,
+		"Username":    logging.RedactNonEmpty(ag.Username),
+		"Password":    logging.RedactNonEmpty(ag.Password),
+		"Host":        ag.Host,
+		"Port":        ag.Port,
 		"Description": ag.Description,
 	}
 }

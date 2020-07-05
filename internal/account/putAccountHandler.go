@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/sajeevany/graph-snapper/internal/db/aerospike"
+	"github.com/sajeevany/graph-snapper/internal/db/aerospike/record"
 	"github.com/sirupsen/logrus"
 	"net/http"
 	"time"
@@ -16,7 +17,7 @@ const PutAccountEndpoint = "/:id"
 //@Description Non-authenticated endpoint creates an empty record at the specified key. Overwrites any record that already exists
 //@Produce json
 //@Param id path string true "id"
-//@Param account body aerospike.AccountViewV1 true "Create account"
+//@Param account body record.AccountViewV1 true "Create account"
 //@Success 200 {string} string "ok"
 //@Fail 404 {object} gin.H
 //@Router /account/:id [put]
@@ -34,7 +35,7 @@ func PutAccountV1(logger *logrus.Logger, aeroClient *aerospike.ASClient) gin.Han
 		}
 
 		//Bind account object
-		var account aerospike.AccountViewV1
+		var account record.AccountViewV1
 		if bErr := ctx.BindJSON(&account); bErr != nil {
 			msg := fmt.Sprintf("Unable to bind request body to account object %v", bErr)
 			logger.Errorf(msg)
@@ -67,7 +68,7 @@ func PutAccountV1(logger *logrus.Logger, aeroClient *aerospike.ASClient) gin.Han
 }
 
 //assumes valid account
-func createAccount(logger *logrus.Logger, aeroClient *aerospike.ASClient, key string, account aerospike.AccountViewV1) (*aerospike.RecordV1, error) {
+func createAccount(logger *logrus.Logger, aeroClient *aerospike.ASClient, key string, account record.AccountViewV1) (*record.RecordV1, error) {
 
 	logger.Debug("Creating account record")
 
@@ -81,22 +82,22 @@ func createAccount(logger *logrus.Logger, aeroClient *aerospike.ASClient, key st
 		return nil, wErr
 	}
 
-	return &rec, nil
+	return rec, nil
 }
 
-func newAccountRecordV1(key string, account aerospike.AccountViewV1) aerospike.RecordV1 {
+func newAccountRecordV1(key string, account record.AccountViewV1) *record.RecordV1 {
 	now := time.Now().UTC().String()
-	return aerospike.RecordV1{
-		Metadata: aerospike.MetadataV1{
+	return &record.RecordV1{
+		Metadata: record.MetadataV1{
 			PrimaryKey: key,
 			LastUpdate: now,
 			CreateTime: now,
 			Version:    aerospike.V1RecordLevel,
 		},
-		Account: aerospike.AccountV1{
+		Account: record.AccountV1{
 			Email: account.Email,
 			Alias: account.Alias,
 		},
-		Credentials: aerospike.CredentialsV1{},
+		Credentials: record.CredentialsV1{},
 	}
 }

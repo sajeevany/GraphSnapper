@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"github.com/aerospike/aerospike-client-go"
 	"github.com/mitchellh/mapstructure"
+	"github.com/sajeevany/graph-snapper/internal/db/aerospike/record"
 	"strings"
 )
 
 type DbReader interface {
-	ReadRecord(key *aerospike.Key) (Record, error)
+	ReadRecord(key *aerospike.Key) (record.Record, error)
 	KeyExists(key string) (bool, *aerospike.Key, error)
 }
 
@@ -46,7 +47,7 @@ func (a *AerospikeReader) KeyExists(keyStr string) (bool, *aerospike.Key, error)
 	return exists, key, nil
 }
 
-func (a *AerospikeReader) ReadRecord(key *aerospike.Key) (Record, error) {
+func (a *AerospikeReader) ReadRecord(key *aerospike.Key) (record.Record, error) {
 
 	logger := a.asClient.Logger
 	aeroClient := a.asClient.Client
@@ -65,7 +66,7 @@ func (a *AerospikeReader) ReadRecord(key *aerospike.Key) (Record, error) {
 	case "":
 		vErr := fmt.Errorf("record does not have metadata.version set")
 		return nil, vErr
-	case VersionLevel_1:
+	case record.VersionLevel_1:
 		rec, cErr := readV1Record(aRecord.Bins)
 		if cErr != nil {
 			logger.Errorf("Error converting bin map <%v> to record. err <%v>", aRecord.Bins, cErr)
@@ -80,9 +81,9 @@ func (a *AerospikeReader) ReadRecord(key *aerospike.Key) (Record, error) {
 	}
 }
 
-func readV1Record(bm aerospike.BinMap) (Record, error) {
+func readV1Record(bm aerospike.BinMap) (record.Record, error) {
 
-	var rec RecordV1
+	var rec record.RecordV1
 	if cErr := mapstructure.Decode(bm, &rec); cErr != nil {
 		return nil, cErr
 	}

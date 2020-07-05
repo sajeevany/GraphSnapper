@@ -3,6 +3,7 @@ package aerospike
 import (
 	"fmt"
 	"github.com/aerospike/aerospike-client-go"
+	"github.com/sajeevany/graph-snapper/internal/db/aerospike/record"
 	"github.com/sirupsen/logrus"
 )
 
@@ -19,12 +20,12 @@ func GetVersion(logger *logrus.Logger, aeroRecord aerospike.BinMap) string {
 	}
 
 	//Get metadata bin map
-	mdBin := aeroRecord[MetadataBinName]
+	mdBin := aeroRecord[record.MetadataBinName]
 
 	//Get version value
 	switch v := mdBin.(type) {
 	case map[interface{}]interface{}:
-		version := fmt.Sprintf("%s", v[VersionAttrName])
+		version := fmt.Sprintf("%s", v[record.VersionAttrName])
 		logger.Debugf("Bin map is [interface]interface. Returning <%v>", version)
 		return version
 	default:
@@ -41,7 +42,7 @@ func hasMetadataBin(logger *logrus.Logger, aeroRecord aerospike.BinMap) bool {
 		return false
 	}
 
-	_, ok := aeroRecord[MetadataBinName]
+	_, ok := aeroRecord[record.MetadataBinName]
 
 	return ok
 }

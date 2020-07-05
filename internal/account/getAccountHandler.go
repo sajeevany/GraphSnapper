@@ -14,7 +14,7 @@ const GetAccountEndpoint = "/:id"
 //@Description Non-authenticated endpoint fetches account at specified key
 //@Produce json
 //@Param id path string true "id"
-//@Success 200 {object} aerospike.RecordViewV1
+//@Success 200 {object} record.RecordViewV1
 //@Fail 404 {object} gin.H
 //@Router /account/:id [get]
 //@Tags account

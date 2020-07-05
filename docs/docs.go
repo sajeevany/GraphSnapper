@@ -191,7 +191,7 @@ var doc = `{
         "aerospike.CredentialsView1": {
             "type": "object",
             "properties": {
-                "GrafanaUsers": {
+                "GrafanaAPIUsers": {
                     "type": "object",
                     "additionalProperties": {
                         "$ref": "#/definitions/aerospike.GrafanaUser"

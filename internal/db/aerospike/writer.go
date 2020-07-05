@@ -3,10 +3,11 @@ package aerospike
 import (
 	"fmt"
 	"github.com/aerospike/aerospike-client-go"
+	"github.com/sajeevany/graph-snapper/internal/db/aerospike/record"
 )
 
 type DbWriter interface {
-	WriteRecord(key string, record RecordV1) error
+	WriteRecord(key string, record record.Record) error
 }
 
 func newAerospikeWriter(asClient *ASClient) DbWriter {
@@ -20,7 +21,7 @@ type AerospikeWriter struct {
 }
 
 //Writes record with specified key in the account namespace under the account set. Returns error if one is found
-func (a *AerospikeWriter) WriteRecord(key string, record RecordV1) error {
+func (a *AerospikeWriter) WriteRecord(key string, record record.Record) error {
 
 	logger := a.asClient.Logger
 	logger.WithFields(record.GetFields()).Debug("Starting record create")
