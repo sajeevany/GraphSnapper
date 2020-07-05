@@ -66,6 +66,7 @@ type AddConfluenceServerUserV1 struct {
 	Password string
 	Host     string
 	Port     int
+	Description string
 }
 
 func (ag AddConfluenceServerUserV1) GetFields() logrus.Fields {
@@ -74,6 +75,7 @@ func (ag AddConfluenceServerUserV1) GetFields() logrus.Fields {
 		"Password": logging.RedactNonEmpty(ag.Password),
 		"Host":     ag.Host,
 		"Port":     ag.Port,
+		"Description": ag.Description,
 	}
 }
 
