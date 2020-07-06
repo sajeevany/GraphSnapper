@@ -55,7 +55,6 @@ func (c CredentialsV1) getCredentialBin() *aerospike.Bin {
 		})
 }
 
-
 func getNextFreeIdx(users map[string]DBGrafanaUser, namespace string) string {
 
 	idx := shortuuid.NewWithNamespace(namespace)

@@ -2,6 +2,7 @@ package confluence
 
 import (
 	"fmt"
+	"github.com/sajeevany/graph-snapper/internal/common"
 	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
@@ -10,12 +11,12 @@ import (
 
 const AccessModeURL = "/rest/api/accessmode"
 
-func HasWriteAccess(logger *logrus.Logger, host string, port int, user, password string) (bool, error) {
+func HasWriteAccess(logger *logrus.Logger, host string, port int, auth common.Auth) (bool, error) {
 
 	logger.Debug("Starting valid login API key check")
 
 	client := http.Client{}
-	req, err := buildAccessModeRequest(logger, host, port, user, password)
+	req, err := buildAccessModeRequest(logger, host, port, auth)
 	if err != nil {
 		logger.Debugf("An error was found when creating http request to validate confluence user. <%v>", err)
 		return false, err
@@ -50,7 +51,7 @@ func HasWriteAccess(logger *logrus.Logger, host string, port int, user, password
 
 }
 
-func buildAccessModeRequest(logger *logrus.Logger, host string, port int, user, password string) (*http.Request, error) {
+func buildAccessModeRequest(logger *logrus.Logger, host string, port int, auth common.Auth) (*http.Request, error) {
 
 	//Build request url
 	reqURL := fmt.Sprintf("http://%v:%v%v", host, port, AccessModeURL)
@@ -63,7 +64,7 @@ func buildAccessModeRequest(logger *logrus.Logger, host string, port int, user, 
 	}
 
 	//add headers
-	req.SetBasicAuth(user, password)
+	common.SetAuthHeader(logger, auth, req)
 	req.Header.Set("Content-Type", "application/json")
 
 	return req, nil

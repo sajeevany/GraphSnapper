@@ -50,7 +50,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/aerospike.RecordViewV1"
+                            "$ref": "#/definitions/record.RecordViewV1"
                         }
                     }
                 }
@@ -78,7 +78,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/aerospike.AccountViewV1"
+                            "$ref": "#/definitions/record.AccountViewV1"
                         }
                     }
                 ],
@@ -148,7 +148,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/credentials.CheckCredentialsResultV1"
+                            "$ref": "#/definitions/credentials.CheckUsersResultV1"
                         }
                     }
                 }
@@ -176,68 +176,35 @@ var doc = `{
         }
     },
     "definitions": {
-        "aerospike.AccountViewV1": {
+        "common.Auth": {
             "type": "object",
             "properties": {
-                "Alias": {
-                    "description": "Optional arg. Won't be returned if missing.",
+                "basic": {
+                    "type": "object",
+                    "$ref": "#/definitions/common.Basic"
+                },
+                "bearerToken": {
+                    "type": "object",
+                    "$ref": "#/definitions/common.BearerToken"
+                }
+            }
+        },
+        "common.Basic": {
+            "type": "object",
+            "properties": {
+                "password": {
                     "type": "string"
                 },
-                "Email": {
+                "username": {
                     "type": "string"
                 }
             }
         },
-        "aerospike.CredentialsView1": {
+        "common.BearerToken": {
             "type": "object",
             "properties": {
-                "GrafanaAPIUsers": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "$ref": "#/definitions/aerospike.GrafanaUser"
-                    }
-                }
-            }
-        },
-        "aerospike.GrafanaUser": {
-            "type": "object",
-            "properties": {
-                "Description": {
+                "token": {
                     "type": "string"
-                }
-            }
-        },
-        "aerospike.MetadataViewV1": {
-            "type": "object",
-            "properties": {
-                "CreateTimeUTC": {
-                    "type": "string"
-                },
-                "LastUpdate": {
-                    "type": "string"
-                },
-                "PrimaryKey": {
-                    "type": "string"
-                },
-                "Version": {
-                    "type": "string"
-                }
-            }
-        },
-        "aerospike.RecordViewV1": {
-            "type": "object",
-            "properties": {
-                "Account": {
-                    "type": "object",
-                    "$ref": "#/definitions/aerospike.AccountViewV1"
-                },
-                "Credentials": {
-                    "type": "object",
-                    "$ref": "#/definitions/aerospike.CredentialsView1"
-                },
-                "Metadata": {
-                    "type": "object",
-                    "$ref": "#/definitions/aerospike.MetadataViewV1"
                 }
             }
         },
@@ -315,88 +282,32 @@ var doc = `{
                 }
             }
         },
-        "credentials.CheckConfluenceServerUserV1": {
-            "type": "object",
-            "properties": {
-                "host": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                },
-                "port": {
-                    "type": "integer"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "credentials.CheckConfluenceUserResultV1": {
-            "type": "object",
-            "properties": {
-                "Cause": {
-                    "type": "string"
-                },
-                "host": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                },
-                "port": {
-                    "type": "integer"
-                },
-                "result": {
-                    "type": "boolean"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "credentials.CheckCredentialsResultV1": {
-            "type": "object",
-            "properties": {
-                "confluenceServerUserCheck": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/credentials.CheckConfluenceUserResultV1"
-                    }
-                },
-                "grafanaReadUserCheck": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/credentials.CheckGrafanaReadUserResultV1"
-                    }
-                }
-            }
-        },
         "credentials.CheckCredentialsV1": {
             "type": "object",
             "properties": {
                 "confluenceServerUsers": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/credentials.CheckConfluenceServerUserV1"
+                        "$ref": "#/definitions/credentials.CheckUserV1"
                     }
                 },
                 "grafanaReadUsers": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/credentials.CheckGrafanaReadUserV1"
+                        "$ref": "#/definitions/credentials.CheckUserV1"
                     }
                 }
             }
         },
-        "credentials.CheckGrafanaReadUserResultV1": {
+        "credentials.CheckUserResultV1": {
             "type": "object",
             "properties": {
                 "Cause": {
                     "type": "string"
                 },
-                "apikey": {
-                    "type": "string"
+                "auth": {
+                    "type": "object",
+                    "$ref": "#/definitions/common.Auth"
                 },
                 "host": {
                     "type": "string"
@@ -409,17 +320,35 @@ var doc = `{
                 }
             }
         },
-        "credentials.CheckGrafanaReadUserV1": {
+        "credentials.CheckUserV1": {
             "type": "object",
             "properties": {
-                "apikey": {
-                    "type": "string"
+                "auth": {
+                    "type": "object",
+                    "$ref": "#/definitions/common.Auth"
                 },
                 "host": {
                     "type": "string"
                 },
                 "port": {
                     "type": "integer"
+                }
+            }
+        },
+        "credentials.CheckUsersResultV1": {
+            "type": "object",
+            "properties": {
+                "confluenceServerUserCheck": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/credentials.CheckUserResultV1"
+                    }
+                },
+                "grafanaReadUserCheck": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/credentials.CheckUserResultV1"
+                    }
                 }
             }
         },
@@ -429,6 +358,71 @@ var doc = `{
                 "response": {
                     "type": "string",
                     "example": "hello"
+                }
+            }
+        },
+        "record.AccountViewV1": {
+            "type": "object",
+            "properties": {
+                "Alias": {
+                    "description": "Optional arg. Won't be returned if missing.",
+                    "type": "string"
+                },
+                "Email": {
+                    "type": "string"
+                }
+            }
+        },
+        "record.CredentialsView1": {
+            "type": "object",
+            "properties": {
+                "GrafanaAPIUsers": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/record.GrafanaUser"
+                    }
+                }
+            }
+        },
+        "record.GrafanaUser": {
+            "type": "object",
+            "properties": {
+                "Description": {
+                    "type": "string"
+                }
+            }
+        },
+        "record.MetadataViewV1": {
+            "type": "object",
+            "properties": {
+                "CreateTimeUTC": {
+                    "type": "string"
+                },
+                "LastUpdate": {
+                    "type": "string"
+                },
+                "PrimaryKey": {
+                    "type": "string"
+                },
+                "Version": {
+                    "type": "string"
+                }
+            }
+        },
+        "record.RecordViewV1": {
+            "type": "object",
+            "properties": {
+                "Account": {
+                    "type": "object",
+                    "$ref": "#/definitions/record.AccountViewV1"
+                },
+                "Credentials": {
+                    "type": "object",
+                    "$ref": "#/definitions/record.CredentialsView1"
+                },
+                "Metadata": {
+                    "type": "object",
+                    "$ref": "#/definitions/record.MetadataViewV1"
                 }
             }
         }

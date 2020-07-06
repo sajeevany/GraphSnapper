@@ -2,13 +2,14 @@ package grafana
 
 import (
 	"fmt"
+	"github.com/sajeevany/graph-snapper/internal/common"
 	"github.com/sirupsen/logrus"
 	"net/http"
 )
 
 const loginPingURL = "/api/login/ping"
 
-func IsValidLogin(logger *logrus.Logger, apiKey, host string, port int) (bool, error) {
+func IsValidLogin(logger *logrus.Logger, auth common.Auth, host string, port int) (bool, error) {
 
 	logger.Debug("Starting valid login API key check")
 
@@ -21,8 +22,8 @@ func IsValidLogin(logger *logrus.Logger, apiKey, host string, port int) (bool, e
 	}
 
 	//add headers
-	setAuthHeader(req, apiKey)
-	logger.Debug("auth headers set")
+	common.SetAuthHeader(logger, auth, req)
+	logger.Debug("common headers set")
 
 	//execute
 	resp, rErr := client.Do(req)
@@ -49,9 +50,4 @@ func IsValidLogin(logger *logrus.Logger, apiKey, host string, port int) (bool, e
 
 func buildLoginRequestURL(host string, port int) string {
 	return fmt.Sprintf("http://%v:%v%v", host, port, loginPingURL)
-}
-
-func setAuthHeader(req *http.Request, apikey string) {
-	bearer := fmt.Sprintf("Bearer %v", apikey)
-	req.Header.Add("Authorization", bearer)
 }

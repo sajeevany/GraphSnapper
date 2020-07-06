@@ -17,7 +17,7 @@ const (
 //@Description Non-authenticated endpoint Check credentials for validity. Returns an array of user objects with check result
 //@Produce json
 //@Param credentials body CheckCredentialsV1 true "Check credentials"
-//@Success 200 {object} CheckCredentialsResultV1
+//@Success 200 {object} CheckUsersResultV1
 //@Fail 400 {object} gin.H
 //@Fail 500 {object} gin.H
 //@Router /credentials/check [post]
@@ -48,10 +48,10 @@ func CheckV1(logger *logrus.Logger) gin.HandlerFunc {
 	}
 }
 
-func validateCredentials(logger *logrus.Logger, creds CheckCredentialsV1) (CheckCredentialsResultV1, error) {
+func validateCredentials(logger *logrus.Logger, creds CheckCredentialsV1) (CheckUsersResultV1, error) {
 
 	logger.Debug("Started credentials validation")
-	result := CheckCredentialsResultV1{}
+	result := CheckUsersResultV1{}
 
 	//Check grafana users
 	if len(creds.GrafanaReadUsers) != 0 {

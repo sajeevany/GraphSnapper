@@ -112,7 +112,7 @@ func validateAcctID(logger *logrus.Logger, aeroClient *as.ASClient, id string) (
 //Assumes that the record at the provided key has already been checked for existence
 func addUsersToAccount(logger *logrus.Logger, client *as.ASClient, req AddCredentialsV1, actKey *aerospike.Key) error {
 
-	////Get the current record
+	//Get the current record
 	//record, err := client.GetReader().ReadRecord(actKey)
 	//if err != nil {
 	//	logger.Errorf("Failed to read record using key <%v>. err <%v>", actKey.String(), err)
