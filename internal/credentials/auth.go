@@ -10,7 +10,7 @@ func authGrafanaUsers(logger *logrus.Logger, users []CheckUserV1) ([]CheckUserRe
 
 	results := make([]CheckUserResultV1, len(users))
 
-	logger.Debug("authenticating users")
+	logger.Debug("authenticating grafana users")
 	for i, user := range users {
 
 		res, err := authenticateGrafanaUser(logger, user)
@@ -20,6 +20,8 @@ func authGrafanaUsers(logger *logrus.Logger, users []CheckUserV1) ([]CheckUserRe
 
 		results[i] = res
 	}
+	logger.Debug("done authenticating grafana users")
+
 
 	return results, nil
 }
@@ -59,6 +61,8 @@ func authConfluenceUsers(logger *logrus.Logger, users []CheckUserV1) ([]CheckUse
 
 		results[i] = res
 	}
+	logger.Debug("done authenticating confluence server users")
+
 
 	return results, nil
 }

@@ -11,7 +11,7 @@ const loginPingURL = "/api/login/ping"
 
 func IsValidLogin(logger *logrus.Logger, auth common.Auth, host string, port int) (bool, error) {
 
-	logger.Debug("Starting valid login API key check")
+	logger.Debug("Starting a grafana valid login API key check")
 
 	client := http.Client{}
 	reqURL := buildLoginRequestURL(host, port)
@@ -24,6 +24,7 @@ func IsValidLogin(logger *logrus.Logger, auth common.Auth, host string, port int
 	//add headers
 	common.SetAuthHeader(logger, auth, req)
 	logger.Debug("common headers set")
+	logger.Infof("req %#v", req)
 
 	//execute
 	resp, rErr := client.Do(req)
@@ -31,7 +32,8 @@ func IsValidLogin(logger *logrus.Logger, auth common.Auth, host string, port int
 		logger.Debugf("Error when calling request to <%v>. err <%v>", reqURL, err)
 		return false, rErr
 	}
-	logger.Debug("login API request executed. Checking status code.")
+	logger.Infof("response <%#v>", resp)
+	logger.Debugf("login API request executed. Received status code. <%v>", resp.StatusCode)
 	defer resp.Body.Close()
 
 	//Check response

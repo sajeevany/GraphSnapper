@@ -13,7 +13,7 @@ const AccessModeURL = "/rest/api/accessmode"
 
 func HasWriteAccess(logger *logrus.Logger, host string, port int, auth common.Auth) (bool, error) {
 
-	logger.Debug("Starting valid login API key check")
+	logger.Debug("Starting a confluence server valid login API key check")
 
 	client := http.Client{}
 	req, err := buildAccessModeRequest(logger, host, port, auth)
@@ -44,6 +44,9 @@ func HasWriteAccess(logger *logrus.Logger, host string, port int, auth common.Au
 		}
 
 		return hasWAccess, nil
+	case http.StatusUnauthorized:
+		logger.Debugf("Unauthorized (401) response body <%v>", resp.Body)
+		return false, nil
 	default:
 		logger.Debugf("Unexpected response status code <%v>", resp.StatusCode)
 		return false, nil
