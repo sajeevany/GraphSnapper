@@ -113,11 +113,13 @@ func validateAcctID(logger *logrus.Logger, aeroClient *as.ASClient, id string) (
 func addUsersToAccount(logger *logrus.Logger, client *as.ASClient, req AddCredentialsV1, actKey *aerospike.Key) error {
 
 	//Get the current record
-	//record, err := client.GetReader().ReadRecord(actKey)
-	//if err != nil {
-	//	logger.Errorf("Failed to read record using key <%v>. err <%v>", actKey.String(), err)
-	//	return err
-	//}
+	record, err := client.GetReader().ReadRecord(actKey)
+	if err != nil {
+		logger.Errorf("Failed to read record using key <%v>. err <%v>", actKey.String(), err)
+		return err
+	}
+
+	record.AddUserCredentialsV1(req.GrafanaReadUsers, req.ConfluenceServerUsers)
 
 	return nil
 }

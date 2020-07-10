@@ -12,7 +12,7 @@ import (
 func Test_authGrafanaUsersIntegration(t *testing.T) {
 
 	//Skip test if user wants to only run regression tests
-	if testing.Short(){
+	if testing.Short() {
 		t.Skip()
 	}
 
@@ -29,11 +29,10 @@ func Test_authGrafanaUsersIntegration(t *testing.T) {
 		name    string
 		args    args
 		want    []CheckUserResultV1
-		wantErr bool
 	}{
 		{
-			name:    "test0 all invalid bearer token users",
-			args:    args{
+			name: "test0 all invalid bearer token users",
+			args: args{
 				logger: logrus.New(),
 				users: []CheckUserV1{
 					{
@@ -56,9 +55,10 @@ func Test_authGrafanaUsersIntegration(t *testing.T) {
 					},
 				},
 			},
-			want: []CheckUserResultV1{{
-					Result:      false,
-					Cause:       "Unauthorized. Received 401",
+			want: []CheckUserResultV1{
+				{
+					Result: false,
+					Cause:  "Unauthorized. Received 401",
 					CheckUserV1: CheckUserV1{
 						Auth: common.Auth{
 							BearerToken: common.BearerToken{
@@ -69,8 +69,8 @@ func Test_authGrafanaUsersIntegration(t *testing.T) {
 						Port: grafanaPortInt,
 					},
 				}, {
-					Result:      false,
-					Cause:       "Unauthorized. Received 401",
+					Result: false,
+					Cause:  "Unauthorized. Received 401",
 					CheckUserV1: CheckUserV1{
 						Auth: common.Auth{
 							BearerToken: common.BearerToken{
@@ -82,16 +82,11 @@ func Test_authGrafanaUsersIntegration(t *testing.T) {
 					},
 				},
 			},
-			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := authGrafanaUsers(tt.args.logger, tt.args.users)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("authGrafanaUsers() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
+			got := authGrafanaUsers(tt.args.logger, tt.args.users)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("authGrafanaUsers() got = %v, want %v", got, tt.want)
 			}

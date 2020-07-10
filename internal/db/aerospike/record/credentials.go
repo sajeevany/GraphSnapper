@@ -3,12 +3,13 @@ package record
 import (
 	"github.com/aerospike/aerospike-client-go"
 	"github.com/lithammer/shortuuid"
+	"github.com/sajeevany/graph-snapper/internal/common"
 	"github.com/sirupsen/logrus"
 )
 
 //CredentialsV1 - CredentialsV1 for various graph and storage services
 type CredentialsV1 struct {
-	GrafanaAPIUsers map[string]DBGrafanaUser
+	GrafanaAPIUsers map[string]common.GrafanaUserV1
 }
 
 func (c CredentialsV1) toCredentialsView1() CredentialsView1 {
@@ -42,8 +43,8 @@ func (c CredentialsV1) getCredentialBin() *aerospike.Bin {
 	//Create grafana users bin map
 	grafanaUsersBinMap := make(map[string]interface{})
 	for i, v := range c.GrafanaAPIUsers {
-		grafanaUsersBinMap[i] = map[string]string{
-			"APIKey":      v.APIKey,
+		grafanaUsersBinMap[i] = map[string]interface{}{
+			"Authentication":      v.Authentication.ToAerospikeBinMap(),
 			"Description": v.Description,
 		}
 	}
@@ -55,7 +56,7 @@ func (c CredentialsV1) getCredentialBin() *aerospike.Bin {
 		})
 }
 
-func getNextFreeIdx(users map[string]DBGrafanaUser, namespace string) string {
+func getNextFreeIdx(users map[string]common.GrafanaUserV1, namespace string) string {
 
 	idx := shortuuid.NewWithNamespace(namespace)
 	_, keyInUse := users[idx]

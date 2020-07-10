@@ -6,7 +6,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func authGrafanaUsers(logger *logrus.Logger, users []CheckUserV1) []CheckUserResultV1{
+func authGrafanaUsers(logger *logrus.Logger, users []CheckUserV1) []CheckUserResultV1 {
 
 	results := make([]CheckUserResultV1, len(users))
 
@@ -15,7 +15,6 @@ func authGrafanaUsers(logger *logrus.Logger, users []CheckUserV1) []CheckUserRes
 		results[i] = authenticateGrafanaUser(logger, user)
 	}
 	logger.Debug("done authenticating grafana users")
-
 
 	return results
 }
@@ -56,7 +55,6 @@ func authConfluenceUsers(logger *logrus.Logger, users []CheckUserV1) []CheckUser
 		results[i] = authenticateConfluenceUser(logger, user)
 	}
 	logger.Debug("done authenticating confluence server users")
-
 
 	return results
 }

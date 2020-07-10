@@ -12,7 +12,7 @@ import (
 func TestIsValidLogin(t *testing.T) {
 
 	//Skip test if user wants to only run regression tests
-	if testing.Short(){
+	if testing.Short() {
 		t.Skip()
 	}
 
