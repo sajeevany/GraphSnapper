@@ -11,7 +11,10 @@ services:
     depends_on:
       - nosql
     ports:
-      - "80:8080"
+      - target: 8080
+        published: 80
+        protocol: tcp
+        mode: host
   nosql:
     ulimits:
       nofile: 90000

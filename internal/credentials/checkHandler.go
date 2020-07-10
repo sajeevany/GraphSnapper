@@ -55,22 +55,12 @@ func validateCredentials(logger *logrus.Logger, creds CheckCredentialsV1) (Check
 
 	//Check grafana users
 	if len(creds.GrafanaReadUsers) != 0 {
-		gc, err := authGrafanaUsers(logger, creds.GrafanaReadUsers)
-		if err != nil {
-			logger.Errorf("Internal error when authenticating grafana users. <%v>", err)
-			return result, err
-		}
-		result.GrafanaReadUserCheck = gc
+		result.GrafanaReadUserCheck = authGrafanaUsers(logger, creds.GrafanaReadUsers)
 	}
 
 	//Check confluence users
 	if len(creds.ConfluenceServerUsers) != 0 {
-		cc, err := authConfluenceUsers(logger, creds.ConfluenceServerUsers)
-		if err != nil {
-			logger.Errorf("Internal error when authenticating confluence users. <%v>", err)
-			return result, err
-		}
-		result.ConfluenceServerUserCheck = cc
+		result.ConfluenceServerUserCheck = authConfluenceUsers(logger, creds.ConfluenceServerUsers)
 	}
 
 	return result, nil
