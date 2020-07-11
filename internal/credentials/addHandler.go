@@ -33,14 +33,23 @@ func PostCredentialsV1(logger *logrus.Logger, aeroClient *as.ASClient) gin.Handl
 		}
 
 		//Validate account. Returns account key since it validates if the record exists
-		vErr, returnCode, actKey := validateRequest(logger, aeroClient, addReq)
+		vErr, returnCode, actKey, actKeyExists := validateRequest(logger, aeroClient, addReq)
 		if vErr != nil {
-			logger.WithFields(addReq.GetFields()).Errorf("Input credentials are invalid <%v>", vErr)
-			ctx.JSON(returnCode, gin.H{
-				"humanReadableError": "Input credentials variables are invalid. Host, user, password, apikey must be non empty. Port must be within ",
-				"error":              vErr.Error(),
-			})
-			return
+			if actKeyExists {
+				logger.WithFields(addReq.GetFields()).Errorf("Input credentials are invalid <%v>", vErr)
+				ctx.JSON(returnCode, gin.H{
+					"humanReadableError": "Input credentials variables are invalid. Host, user, password, apikey must be non empty. Port must be within 0 and 65535",
+					"error":              vErr.Error(),
+				})
+				return
+			} else {
+				logger.WithFields(addReq.GetFields()).Errorf("Account id doesn't exist <%v>. err <%v>", addReq.AccountID, vErr)
+				ctx.JSON(returnCode, gin.H{
+					"humanReadableError": fmt.Sprintf("No account exists with ID %v", addReq.AccountID),
+					"error":              vErr.Error(),
+				})
+				return
+			}
 		}
 
 		//Check if any users have been provided. If not, skip and return 200
@@ -62,19 +71,20 @@ func PostCredentialsV1(logger *logrus.Logger, aeroClient *as.ASClient) gin.Handl
 }
 
 //Checks if input is in acceptable and a record exists with the specified key. Returns a non-zero return code if an error is present. Returns no error and a statusOk(200).
-func validateRequest(logger *logrus.Logger, aeroClient *as.ASClient, addReq AddCredentialsV1) (error, int, *aerospike.Key) {
+func validateRequest(logger *logrus.Logger, aeroClient *as.ASClient, addReq AddCredentialsV1) (error, int, *aerospike.Key, bool) {
 
 	//Validate the account info. Checks if record exists with the ID
-	returnCode, aErr, actKey := validateAcctID(logger, aeroClient, addReq.AccountID)
-	if aErr != nil {
-		return aErr, returnCode, nil
+	returnCode, aErr, actKey, actKeyExists := validateAcctID(logger, aeroClient, addReq.AccountID)
+	if aErr != nil || !actKeyExists {
+		//if an error occurred or the key doesn't exist return with the http code
+		return aErr, returnCode, nil, actKeyExists
 	}
 
 	//Validate grafana users
 	for _, gUser := range addReq.GrafanaReadUsers {
 		if !gUser.IsValid() {
 			logger.WithFields(gUser.GetFields()).Errorf("Grafana user has invalid attributes")
-			return fmt.Errorf("grafana user <%#v> is invalid", gUser), http.StatusBadRequest, nil
+			return fmt.Errorf("grafana user <%#v> is invalid", gUser), http.StatusBadRequest, nil, actKeyExists
 		}
 	}
 
@@ -82,31 +92,33 @@ func validateRequest(logger *logrus.Logger, aeroClient *as.ASClient, addReq AddC
 	for _, csUser := range addReq.ConfluenceServerUsers {
 		if !csUser.IsValid() {
 			logger.WithFields(csUser.GetFields()).Errorf("Confluence user has invalid attributes")
-			return fmt.Errorf("confluence user <%#v> is invalid", csUser), http.StatusBadRequest, nil
+			return fmt.Errorf("confluence user <%#v> is invalid", csUser), http.StatusBadRequest, nil, actKeyExists
 		}
 	}
 
-	return nil, http.StatusOK, actKey
+	return nil, http.StatusOK, actKey, actKeyExists
 }
 
 //Returns error if invalid. int value is the http return code to use
-func validateAcctID(logger *logrus.Logger, aeroClient *as.ASClient, id string) (int, error, *aerospike.Key) {
+func validateAcctID(logger *logrus.Logger, aeroClient *as.ASClient, id string) (int, error, *aerospike.Key, bool) {
 
 	if id == "" {
-		return http.StatusBadRequest, fmt.Errorf("account ID is empty and must be defined"), nil
+		return http.StatusBadRequest, fmt.Errorf("account ID is empty and must be defined"), nil, false
 	}
 
 	//check if account exists
-	acctExists, actKey, rErr := aeroClient.GetReader().KeyExists(id)
+	actExists, actKey, rErr := aeroClient.GetReader().KeyExists(id)
 	if rErr != nil {
 		logger.Errorf("Error when reading from aerospike to check if key exists <%v>", rErr)
-		return http.StatusInternalServerError, rErr, actKey
+		return http.StatusInternalServerError, rErr, actKey, actExists
 	}
-	if !acctExists {
-		return http.StatusNotFound, nil, actKey
+	if !actExists {
+		msg := fmt.Sprintf("Key <%v> doesn't exist", id)
+		logger.Debug(msg)
+		return http.StatusNotFound, fmt.Errorf(msg), actKey, actExists
 	}
 
-	return http.StatusOK, nil, actKey
+	return http.StatusOK, nil, actKey, actExists
 }
 
 //Assumes that the record at the provided key has already been checked for existence

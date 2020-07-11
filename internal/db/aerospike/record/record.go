@@ -2,6 +2,7 @@ package record
 
 import (
 	"github.com/aerospike/aerospike-client-go"
+	"github.com/lithammer/shortuuid"
 	"github.com/sajeevany/graph-snapper/internal/common"
 	"github.com/sirupsen/logrus"
 )
@@ -63,12 +64,45 @@ func (r *RecordV1) ToASBinSlice() []*aerospike.Bin {
 	}
 }
 
-func (r *RecordV1) AddUserCredentialsV1(grafanaUsers []common.GrafanaUserV1, confluenceUser []common.ConfluenceServerUserV1) {
+//Add user details to record. Does not overwrite existing users
+func (r *RecordV1) AddUserCredentialsV1(grafanaUsers []common.GrafanaUserV1, confluenceUsers []common.ConfluenceServerUserV1) {
 
-	//
+	//Add the grafana users
 	for _, gu := range grafanaUsers {
-		index := getNextFreeIdx(r.Credentials.GrafanaAPIUsers, GrafanaAPIUserNamespace)
+		index := getNextFreeGUIdx(r.Credentials.GrafanaAPIUsers, GrafanaAPIUserNamespace)
 		r.Credentials.GrafanaAPIUsers[index] = gu
 	}
 
+	//Add the confluence users
+	for _, cu := range confluenceUsers {
+		index := getNextFreeCSUIdx(r.Credentials.ConfluenceServerAPIUsers, ConfluenceServerBasicUserNamespace)
+		r.Credentials.ConfluenceServerAPIUsers[index] = cu
+	}
+
+}
+
+func getNextFreeGUIdx(users map[string]common.GrafanaUserV1, namespace string) string {
+
+	idx := shortuuid.NewWithNamespace(namespace)
+	_, keyInUse := users[idx]
+
+	for keyInUse {
+		idx = shortuuid.NewWithNamespace(namespace)
+		_, keyInUse = users[idx]
+	}
+
+	return idx
+}
+
+func getNextFreeCSUIdx(users map[string]common.ConfluenceServerUserV1, namespace string) string {
+
+	idx := shortuuid.NewWithNamespace(namespace)
+	_, keyInUse := users[idx]
+
+	for keyInUse {
+		idx = shortuuid.NewWithNamespace(namespace)
+		_, keyInUse = users[idx]
+	}
+
+	return idx
 }

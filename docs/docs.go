@@ -27,7 +27,7 @@ var doc = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/account/:id": {
+        "/account/{id}": {
             "get": {
                 "description": "Non-authenticated endpoint fetches account at specified key",
                 "produces": [
@@ -208,23 +208,39 @@ var doc = `{
                 }
             }
         },
-        "credentials.AddConfluenceServerUserV1": {
+        "common.ConfluenceServerUserV1": {
             "type": "object",
             "properties": {
+                "authentication": {
+                    "type": "object",
+                    "$ref": "#/definitions/common.Auth"
+                },
                 "description": {
                     "type": "string"
                 },
                 "host": {
                     "type": "string"
                 },
-                "password": {
+                "port": {
+                    "type": "integer"
+                }
+            }
+        },
+        "common.GrafanaUserV1": {
+            "type": "object",
+            "properties": {
+                "authentication": {
+                    "type": "object",
+                    "$ref": "#/definitions/common.Auth"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "host": {
                     "type": "string"
                 },
                 "port": {
                     "type": "integer"
-                },
-                "username": {
-                    "type": "string"
                 }
             }
         },
@@ -234,34 +250,17 @@ var doc = `{
                 "ConfluenceServerUsers": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/credentials.AddConfluenceServerUserV1"
+                        "$ref": "#/definitions/common.ConfluenceServerUserV1"
                     }
                 },
                 "GrafanaReadUsers": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/credentials.AddGrafanaReadUserV1"
+                        "$ref": "#/definitions/common.GrafanaUserV1"
                     }
                 },
                 "accountID": {
                     "type": "string"
-                }
-            }
-        },
-        "credentials.AddGrafanaReadUserV1": {
-            "type": "object",
-            "properties": {
-                "apikey": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "host": {
-                    "type": "string"
-                },
-                "port": {
-                    "type": "integer"
                 }
             }
         },
@@ -271,13 +270,13 @@ var doc = `{
                 "ConfluenceServerUsers": {
                     "type": "object",
                     "additionalProperties": {
-                        "$ref": "#/definitions/credentials.AddConfluenceServerUserV1"
+                        "$ref": "#/definitions/common.ConfluenceServerUserV1"
                     }
                 },
                 "GrafanaReadUsers": {
                     "type": "object",
                     "additionalProperties": {
-                        "$ref": "#/definitions/credentials.AddGrafanaReadUserV1"
+                        "$ref": "#/definitions/common.GrafanaUserV1"
                     }
                 }
             }
@@ -373,9 +372,29 @@ var doc = `{
                 }
             }
         },
+        "record.ConfluenceServerUser": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "host": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "integer"
+                }
+            }
+        },
         "record.CredentialsView1": {
             "type": "object",
             "properties": {
+                "ConfluenceServerUser": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/record.ConfluenceServerUser"
+                    }
+                },
                 "GrafanaAPIUsers": {
                     "type": "object",
                     "additionalProperties": {
@@ -387,8 +406,14 @@ var doc = `{
         "record.GrafanaUser": {
             "type": "object",
             "properties": {
-                "Description": {
+                "description": {
                     "type": "string"
+                },
+                "host": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "integer"
                 }
             }
         },

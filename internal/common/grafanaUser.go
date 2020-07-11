@@ -6,15 +6,15 @@ import (
 )
 
 type GrafanaUserV1 struct {
-	Authentication Auth
-	Host           string
-	Port           int
-	Description    string
+	Auth        Auth
+	Host        string
+	Port        int
+	Description string
 }
 
 func (ag GrafanaUserV1) GetFields() logrus.Fields {
 	return logrus.Fields{
-		"Auth":        ag.Authentication.GetRedactedLog(),
+		"Auth":        ag.Auth.GetRedactedLog(),
 		"Host":        ag.Host,
 		"Port":        ag.Port,
 		"Description": ag.Description,
@@ -22,5 +22,5 @@ func (ag GrafanaUserV1) GetFields() logrus.Fields {
 }
 
 func (ag GrafanaUserV1) IsValid() bool {
-	return ag.Authentication.IsValid() && ag.Host != "" && config.IsPortValid(ag.Port)
+	return ag.Auth.IsValid() && ag.Host != "" && config.IsPortValid(ag.Port)
 }

@@ -13,7 +13,7 @@ const (
 
 	//Should be identical to json name of Auth fields so that direct unmarshalling will work
 	BearerTokenASName = "BearerToken"
-	BasicASName = "Basic"
+	BasicASName       = "Basic"
 )
 
 //Auth
@@ -43,7 +43,7 @@ func (a Auth) GetRedactedLog() logrus.Fields {
 }
 
 //IsValid - returns the validity check result of the highest priority auth type provided
-func (a Auth) IsValid() bool{
+func (a Auth) IsValid() bool {
 	if a.BearerToken != (BearerToken{}) {
 		return a.BearerToken.IsValid()
 	}

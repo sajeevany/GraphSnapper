@@ -28,12 +28,21 @@ type AccountViewV1 struct {
 
 //Credentials - Credentials for various graph and storage services
 type CredentialsView1 struct {
-	GrafanaUsers map[string]GrafanaUser `json:"GrafanaAPIUsers"`
+	GrafanaUsers          map[string]GrafanaUser          `json:"GrafanaAPIUsers"`
+	ConfluenceServerUsers map[string]ConfluenceServerUser `json:"ConfluenceServerUser"`
 }
 
 //GrafanaUser - Grafana user without API key information
 type GrafanaUser struct {
-	Description string `json:"Description"`
+	Host        string
+	Port        int
+	Description string
+}
+
+type ConfluenceServerUser struct {
+	Host        string
+	Port        int
+	Description string
 }
 
 //IsValid - returns true if model is valid. Returns false if invalid and includes a non-nil error

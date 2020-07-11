@@ -26,7 +26,7 @@ func GetVersion(logger *logrus.Logger, aeroRecord aerospike.BinMap) string {
 	switch v := mdBin.(type) {
 	case map[interface{}]interface{}:
 		version := fmt.Sprintf("%s", v[record.VersionAttrName])
-		logger.Debugf("Bin map is [interface]interface. Returning <%v>", version)
+		logger.Debugf("Bin map is [interface]interface. Returning version <%v>", version)
 		return version
 	default:
 		logger.Debugf("Bin map is of unsupported type <%T>. Returning empty", v)

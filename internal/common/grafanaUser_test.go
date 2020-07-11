@@ -13,7 +13,7 @@ func TestAddGrafanaReadUserV1_IsValid(t *testing.T) {
 		{
 			name: "test0 empty API key",
 			user: GrafanaUserV1{
-				Authentication: Auth{
+				Auth: Auth{
 					BearerToken: BearerToken{},
 					Basic:       Basic{},
 				},
@@ -26,11 +26,11 @@ func TestAddGrafanaReadUserV1_IsValid(t *testing.T) {
 		{
 			name: "test1 empty hostkey",
 			user: GrafanaUserV1{
-				Authentication: Auth{
+				Auth: Auth{
 					BearerToken: BearerToken{
 						Token: "abcdefg",
 					},
-					Basic:       Basic{
+					Basic: Basic{
 						Username: "asc",
 						Password: "qwerty",
 					},
@@ -44,11 +44,11 @@ func TestAddGrafanaReadUserV1_IsValid(t *testing.T) {
 		{
 			name: "test2 0 val port",
 			user: GrafanaUserV1{
-				Authentication: Auth{
+				Auth: Auth{
 					BearerToken: BearerToken{
 						Token: "abcdefg",
 					},
-					Basic:       Basic{
+					Basic: Basic{
 						Username: "asc",
 						Password: "qwerty",
 					},
@@ -62,11 +62,11 @@ func TestAddGrafanaReadUserV1_IsValid(t *testing.T) {
 		{
 			name: "test3 negative port",
 			user: GrafanaUserV1{
-				Authentication: Auth{
+				Auth: Auth{
 					BearerToken: BearerToken{
 						Token: "abcdefg",
 					},
-					Basic:       Basic{
+					Basic: Basic{
 						Username: "asc",
 						Password: "qwerty",
 					},
@@ -80,11 +80,11 @@ func TestAddGrafanaReadUserV1_IsValid(t *testing.T) {
 		{
 			name: "test4 over max port value",
 			user: GrafanaUserV1{
-				Authentication: Auth{
+				Auth: Auth{
 					BearerToken: BearerToken{
 						Token: "abcdefg",
 					},
-					Basic:       Basic{
+					Basic: Basic{
 						Username: "asc",
 						Password: "qwerty",
 					},
@@ -98,11 +98,11 @@ func TestAddGrafanaReadUserV1_IsValid(t *testing.T) {
 		{
 			name: "test5 valid entry",
 			user: GrafanaUserV1{
-				Authentication: Auth{
+				Auth: Auth{
 					BearerToken: BearerToken{
 						Token: "abcdefg",
 					},
-					Basic:       Basic{
+					Basic: Basic{
 						Username: "asc",
 						Password: "qwerty",
 					},

@@ -26,9 +26,9 @@ func Test_authGrafanaUsersIntegration(t *testing.T) {
 		users  []CheckUserV1
 	}
 	tests := []struct {
-		name    string
-		args    args
-		want    []CheckUserResultV1
+		name string
+		args args
+		want []CheckUserResultV1
 	}{
 		{
 			name: "test0 all invalid bearer token users",

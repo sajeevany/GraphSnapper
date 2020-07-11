@@ -13,102 +13,102 @@ func TestAConfluenceServerUserV1_IsValid(t *testing.T) {
 		{
 			name: "test0 empty username key",
 			user: ConfluenceServerUserV1{
-				Authentication: Auth{
+				Auth: Auth{
 					BearerToken: BearerToken{},
-					Basic:       Basic{
+					Basic: Basic{
 						Username: "",
 						Password: "qwerty",
 					},
 				},
-				Host:     "10.2.3.4",
-				Port:     9000,
+				Host: "10.2.3.4",
+				Port: 9000,
 			},
 			want: false,
 		},
 		{
 			name: "test1 empty password",
 			user: ConfluenceServerUserV1{
-				Authentication: Auth{
+				Auth: Auth{
 					BearerToken: BearerToken{},
-					Basic:       Basic{
+					Basic: Basic{
 						Username: "user",
 						Password: "",
 					},
 				},
-				Host:     "10.2.3.4",
-				Port:     9000,
+				Host: "10.2.3.4",
+				Port: 9000,
 			},
 			want: false,
 		},
 		{
 			name: "test2 0 val port",
 			user: ConfluenceServerUserV1{
-				Authentication: Auth{
+				Auth: Auth{
 					BearerToken: BearerToken{},
-					Basic:       Basic{
+					Basic: Basic{
 						Username: "asc",
 						Password: "qwerty",
 					},
 				},
-				Host:     "10.2.3.4",
-				Port:     0,
+				Host: "10.2.3.4",
+				Port: 0,
 			},
 			want: false,
 		},
 		{
 			name: "test3 negative port",
 			user: ConfluenceServerUserV1{
-				Authentication: Auth{
+				Auth: Auth{
 					BearerToken: BearerToken{},
-					Basic:       Basic{
+					Basic: Basic{
 						Username: "asc",
 						Password: "qwerty",
 					},
 				},
-				Host:     "10.2.3.4",
-				Port:     -1,
+				Host: "10.2.3.4",
+				Port: -1,
 			},
 			want: false,
 		},
 		{
 			name: "test4 over max port value",
 			user: ConfluenceServerUserV1{
-				Authentication: Auth{
+				Auth: Auth{
 					BearerToken: BearerToken{},
-					Basic:       Basic{
+					Basic: Basic{
 						Username: "asc",
 						Password: "qwerty",
 					},
 				},
-				Host:     "10.2.3.4",
-				Port:     999999999999,
+				Host: "10.2.3.4",
+				Port: 999999999999,
 			},
 			want: false,
 		},
 		{
 			name: "test5 valid entry",
 			user: ConfluenceServerUserV1{
-				Authentication: Auth{
+				Auth: Auth{
 					BearerToken: BearerToken{},
-					Basic:       Basic{
+					Basic: Basic{
 						Username: "asc",
 						Password: "qwerty",
 					},
 				},
-				Host:     "10.2.3.4",
-				Port:     8090,
+				Host: "10.2.3.4",
+				Port: 8090,
 			},
 			want: true,
 		},
 		{
 			name: "test6 invalid due to empty authentication struct",
 			user: ConfluenceServerUserV1{
-				Authentication: Auth{
+				Auth: Auth{
 					BearerToken: BearerToken{},
 					Basic:       Basic{},
 				},
-				Host:     "10.2.3.4",
-				Port:     8090,
+				Host: "10.2.3.4",
+				Port: 8090,
 			},
 			want: false,
 		},
