@@ -77,7 +77,7 @@ func (c CredentialsV1) getCredentialBin() *aerospike.Bin {
 	//Create confluence server users bin map
 	confluenceServerUsersBinMap := make(map[string]interface{})
 	for i, v := range c.ConfluenceServerAPIUsers {
-		grafanaUsersBinMap[i] = map[string]interface{}{
+		confluenceServerUsersBinMap[i] = map[string]interface{}{
 			"Auth":        v.Auth.ToAerospikeBinMap(),
 			"Host":        v.Host,
 			"Port":        v.Port,

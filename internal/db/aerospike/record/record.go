@@ -1,6 +1,7 @@
 package record
 
 import (
+	"fmt"
 	"github.com/aerospike/aerospike-client-go"
 	"github.com/lithammer/shortuuid"
 	"github.com/sajeevany/graph-snapper/internal/common"
@@ -28,8 +29,8 @@ type Record interface {
 	ToASBinSlice() []*aerospike.Bin
 	//ToRecordViewV1 - converts to v1 record view
 	ToRecordViewV1() RecordViewV1
-	//AddUserCredentialsV1 - Adds input credentials to record. Does not overwrite any existing records
-	AddUserCredentialsV1([]common.GrafanaUserV1, []common.ConfluenceServerUserV1)
+	//SetUserCredentialsV1 - Adds input credentials to record. Does not overwrite any existing records
+	SetUserCredentialsV1(*logrus.Logger, []common.GrafanaUserV1, []common.ConfluenceServerUserV1)
 }
 
 //Record - Aerospike configuration + credentials data
@@ -65,30 +66,35 @@ func (r *RecordV1) ToASBinSlice() []*aerospike.Bin {
 }
 
 //Add user details to record. Does not overwrite existing users
-func (r *RecordV1) AddUserCredentialsV1(grafanaUsers []common.GrafanaUserV1, confluenceUsers []common.ConfluenceServerUserV1) {
+func (r *RecordV1) SetUserCredentialsV1(logger *logrus.Logger, grafanaUsers []common.GrafanaUserV1, confluenceUsers []common.ConfluenceServerUserV1) {
 
+	logger.Info("Populating record")
 	//Add the grafana users
 	for _, gu := range grafanaUsers {
 		index := getNextFreeGUIdx(r.Credentials.GrafanaAPIUsers, GrafanaAPIUserNamespace)
+		logger.Infof("GU got new index <%v>", index)
 		r.Credentials.GrafanaAPIUsers[index] = gu
 	}
 
 	//Add the confluence users
 	for _, cu := range confluenceUsers {
 		index := getNextFreeCSUIdx(r.Credentials.ConfluenceServerAPIUsers, ConfluenceServerBasicUserNamespace)
+		logger.Infof("CU got new index <%v>", index)
 		r.Credentials.ConfluenceServerAPIUsers[index] = cu
 	}
-
+	logger.WithFields(r.GetFields()).Info("Record populated")
 }
 
 func getNextFreeGUIdx(users map[string]common.GrafanaUserV1, namespace string) string {
 
-	idx := shortuuid.NewWithNamespace(namespace)
+	idx := fmt.Sprintf("%s_%s", namespace, shortuuid.New())
 	_, keyInUse := users[idx]
 
 	for keyInUse {
-		idx = shortuuid.NewWithNamespace(namespace)
+		idx = fmt.Sprintf("%s_%s", namespace, shortuuid.New())
 		_, keyInUse = users[idx]
+		fmt.Println("Going going")
+		fmt.Printf("index %v\n",idx)
 	}
 
 	return idx
@@ -96,11 +102,11 @@ func getNextFreeGUIdx(users map[string]common.GrafanaUserV1, namespace string) s
 
 func getNextFreeCSUIdx(users map[string]common.ConfluenceServerUserV1, namespace string) string {
 
-	idx := shortuuid.NewWithNamespace(namespace)
+	idx := fmt.Sprintf("%s_%s", namespace, shortuuid.New())
 	_, keyInUse := users[idx]
 
 	for keyInUse {
-		idx = shortuuid.NewWithNamespace(namespace)
+		idx = fmt.Sprintf("%s_%s", namespace, shortuuid.New())
 		_, keyInUse = users[idx]
 	}
 

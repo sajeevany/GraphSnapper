@@ -5,6 +5,7 @@ import (
 	"github.com/aerospike/aerospike-client-go"
 	"github.com/gin-gonic/gin"
 	as "github.com/sajeevany/graph-snapper/internal/db/aerospike"
+	"github.com/sajeevany/graph-snapper/internal/db/aerospike/record"
 	"github.com/sirupsen/logrus"
 	"net/http"
 )
@@ -18,9 +19,9 @@ const PostCredentialsEndpoint = "/{accountID}"
 //@Success 200 {object} AddedCredentialsV1
 //@Fail 404 {object} gin.H
 //@Fail 500 {object} gin.H
-//@Router /credentials [post]
+//@Router /credentials [put]
 //@Tags credentials
-func PostCredentialsV1(logger *logrus.Logger, aeroClient *as.ASClient) gin.HandlerFunc {
+func PutCredentialsV1(logger *logrus.Logger, aeroClient *as.ASClient) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
 		//Bind add credentials object
@@ -54,11 +55,12 @@ func PostCredentialsV1(logger *logrus.Logger, aeroClient *as.ASClient) gin.Handl
 
 		//Check if any users have been provided. If not, skip and return 200
 		if addReq.HasNoUsers() {
-			ctx.Status(http.StatusOK)
+			logger.Debug("No credentials were provided for the account id <%v>. returning bad request", addReq.AccountID)
+			ctx.Status(http.StatusBadRequest)
 			return
 		}
 
-		aErr := addUsersToAccount(logger, aeroClient, addReq, actKey)
+		rec, aErr := setAccountUsers(logger, aeroClient, addReq, actKey)
 		if aErr != nil {
 			hMsg := "Internal error when adding users to Aerospike data store"
 			logger.WithFields(addReq.GetFields()).Error(hMsg, aErr)
@@ -67,6 +69,7 @@ func PostCredentialsV1(logger *logrus.Logger, aeroClient *as.ASClient) gin.Handl
 				"error":              aErr.Error()})
 			return
 		}
+		ctx.JSON(http.StatusOK, rec.ToRecordViewV1())
 	}
 }
 
@@ -96,6 +99,7 @@ func validateRequest(logger *logrus.Logger, aeroClient *as.ASClient, addReq AddC
 		}
 	}
 
+	logger.Debugf("Validate request passed for account id <%v>", addReq.AccountID)
 	return nil, http.StatusOK, actKey, actKeyExists
 }
 
@@ -118,20 +122,29 @@ func validateAcctID(logger *logrus.Logger, aeroClient *as.ASClient, id string) (
 		return http.StatusNotFound, fmt.Errorf(msg), actKey, actExists
 	}
 
+	logger.Debugf("Valid account id provided <%v>", id)
 	return http.StatusOK, nil, actKey, actExists
 }
 
-//Assumes that the record at the provided key has already been checked for existence
-func addUsersToAccount(logger *logrus.Logger, client *as.ASClient, req AddCredentialsV1, actKey *aerospike.Key) error {
+//setAccountUsers - adds specified users to the record at the specified account. Assumes that the record at the provided key has already been checked for existence
+func setAccountUsers(logger *logrus.Logger, client *as.ASClient, req AddCredentialsV1, actKey *aerospike.Key) (record.Record, error) {
 
+	logger.Debugf("Starting overwrite users to account with id <%v> operation", actKey.String())
 	//Get the current record
 	record, err := client.GetReader().ReadRecord(actKey)
 	if err != nil {
 		logger.Errorf("Failed to read record using key <%v>. err <%v>", actKey.String(), err)
-		return err
+		return nil, err
 	}
 
-	record.AddUserCredentialsV1(req.GrafanaReadUsers, req.ConfluenceServerUsers)
+	//Update the local record copy and overwrite it in the db
+	logger.Debugf("Record has been read for account with id <%v>. ", actKey.String())
+	record.SetUserCredentialsV1(logger, req.GrafanaReadUsers, req.ConfluenceServerUsers)
+	if wErr := client.GetWriter().WriteRecordWithASKey(actKey, record); wErr != nil{
+		logger.Errorf("Error when writing record to db. err <%v>", wErr)
+		return record, wErr
+	}
 
-	return nil
+	logger.Debugf("Record written for setAccountUsers pk <%v>", actKey.String())
+	return record, nil
 }

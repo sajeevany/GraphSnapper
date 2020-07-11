@@ -116,6 +116,6 @@ func addCredentialsEndpoints(rtr *gin.Engine, logger *logrus.Logger, aeroClient 
 	v1Api := rtr.Group(fmt.Sprintf("%s%s", v1Api, credentials.Group))
 	{
 		v1Api.POST(credentials.CheckCredentialsEndpoint, credentials.CheckV1(logger))
-		v1Api.POST(credentials.AddCredentialsEndpoint, credentials.PostCredentialsV1(logger, aeroClient))
+		v1Api.POST(credentials.AddCredentialsEndpoint, credentials.PutCredentialsV1(logger, aeroClient))
 	}
 }
