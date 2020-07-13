@@ -25,6 +25,7 @@ func (c CredentialsV1) toCredentialsView1() CredentialsView1 {
 
 	for i, v := range c.GrafanaAPIUsers {
 		cv.GrafanaUsers[i] = GrafanaUser{
+			Auth:        v.Auth.GetRedactedView(),
 			Host:        v.Host,
 			Port:        v.Port,
 			Description: v.Description,
@@ -33,6 +34,7 @@ func (c CredentialsV1) toCredentialsView1() CredentialsView1 {
 
 	for i, v := range c.ConfluenceServerAPIUsers {
 		cv.ConfluenceServerUsers[i] = ConfluenceServerUser{
+			Auth:        v.Auth.GetRedactedView(),
 			Host:        v.Host,
 			Port:        v.Port,
 			Description: v.Description,

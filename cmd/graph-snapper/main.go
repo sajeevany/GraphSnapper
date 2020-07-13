@@ -18,7 +18,9 @@ import (
 	_ "github.com/sajeevany/graph-snapper/docs"
 )
 
-const v1Api = "/api/v1"
+const (
+	v1Api = "/api/v1"
+)
 
 // @title Graph Snapper API
 // @version 1.0
@@ -94,7 +96,6 @@ func setupRouter(logger *logrus.Logger) *gin.Engine {
 func setupV1Routes(rtr *gin.Engine, logger *logrus.Logger, aeroClient *aerospike.ASClient) {
 	addHealthEndpoints(rtr, logger)
 	addAccountEndpoints(rtr, logger, aeroClient)
-	addCredentialsEndpoints(rtr, logger, aeroClient)
 }
 
 func addHealthEndpoints(rtr *gin.Engine, logger *logrus.Logger) {
@@ -109,13 +110,9 @@ func addAccountEndpoints(rtr *gin.Engine, logger *logrus.Logger, aeroClient *aer
 	{
 		v1Api.PUT(account.PutAccountEndpoint, account.PutAccountV1(logger, aeroClient))
 		v1Api.GET(account.GetAccountEndpoint, account.GetAccountV1(logger, aeroClient))
-	}
-}
 
-func addCredentialsEndpoints(rtr *gin.Engine, logger *logrus.Logger, aeroClient *aerospike.ASClient) {
-	v1Api := rtr.Group(fmt.Sprintf("%s%s", v1Api, credentials.Group))
-	{
+		//Credentials sub group
 		v1Api.POST(credentials.CheckCredentialsEndpoint, credentials.CheckV1(logger))
-		v1Api.POST(credentials.AddCredentialsEndpoint, credentials.PutCredentialsV1(logger, aeroClient))
+		v1Api.PUT(credentials.AddCredentialsEndpoint, credentials.PutCredentialsV1(logger, aeroClient))
 	}
 }

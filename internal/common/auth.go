@@ -42,6 +42,13 @@ func (a Auth) GetRedactedLog() logrus.Fields {
 	}
 }
 
+func (a Auth) GetRedactedView() Auth {
+	return Auth{
+		BearerToken: a.BearerToken.getRedactedView(),
+		Basic:       a.Basic.getRedactedView(),
+	}
+}
+
 //IsValid - returns the validity check result of the highest priority auth type provided
 func (a Auth) IsValid() bool {
 	if a.BearerToken != (BearerToken{}) {
@@ -127,6 +134,13 @@ func (b Basic) IsValid() bool {
 	return b.Username != "" && b.Password != ""
 }
 
+func (b Basic) getRedactedView() Basic {
+	return Basic{
+		Username: logging.RedactNonEmpty(b.Username),
+		Password: logging.RedactNonEmpty(b.Password),
+	}
+}
+
 type BearerToken struct {
 	Token string
 }
@@ -145,4 +159,10 @@ func (bt BearerToken) ToAerospikeBinMap() map[string]string {
 
 func (a BearerToken) IsValid() bool {
 	return a.Token != ""
+}
+
+func (a BearerToken) getRedactedView() BearerToken {
+	return BearerToken{
+		Token: logging.RedactNonEmpty(a.Token),
+	}
 }

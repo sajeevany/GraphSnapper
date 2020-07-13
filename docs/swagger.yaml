@@ -23,7 +23,7 @@ definitions:
     type: object
   common.ConfluenceServerUserV1:
     properties:
-      authentication:
+      auth:
         $ref: '#/definitions/common.Auth'
         type: object
       description:
@@ -35,7 +35,7 @@ definitions:
     type: object
   common.GrafanaUserV1:
     properties:
-      authentication:
+      auth:
         $ref: '#/definitions/common.Auth'
         type: object
       description:
@@ -44,19 +44,6 @@ definitions:
         type: string
       port:
         type: integer
-    type: object
-  credentials.AddCredentialsV1:
-    properties:
-      ConfluenceServerUsers:
-        items:
-          $ref: '#/definitions/common.ConfluenceServerUserV1'
-        type: array
-      GrafanaReadUsers:
-        items:
-          $ref: '#/definitions/common.GrafanaUserV1'
-        type: array
-      accountID:
-        type: string
     type: object
   credentials.AddedCredentialsV1:
     properties:
@@ -71,11 +58,11 @@ definitions:
     type: object
   credentials.CheckCredentialsV1:
     properties:
-      confluenceServerUsers:
+      ConfluenceServerUsers:
         items:
           $ref: '#/definitions/credentials.CheckUserV1'
         type: array
-      grafanaReadUsers:
+      GrafanaReadUsers:
         items:
           $ref: '#/definitions/credentials.CheckUserV1'
         type: array
@@ -131,6 +118,9 @@ definitions:
     type: object
   record.ConfluenceServerUser:
     properties:
+      auth:
+        $ref: '#/definitions/common.Auth'
+        type: object
       description:
         type: string
       host:
@@ -151,6 +141,9 @@ definitions:
     type: object
   record.GrafanaUser:
     properties:
+      auth:
+        $ref: '#/definitions/common.Auth'
+        type: object
       description:
         type: string
       host:
@@ -189,6 +182,26 @@ info:
   title: Graph Snapper API
   version: "1.0"
 paths:
+  /{id}/credentials:
+    put:
+      description: Non-authenticated endpoint that adds grafana and confluence-server users to an account. Assumes entries are pre-validated
+      parameters:
+      - description: Add credentials
+        in: body
+        name: account
+        required: true
+        schema:
+          $ref: '#/definitions/credentials.AddedCredentialsV1'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/credentials.AddedCredentialsV1'
+      summary: Add credentials to an account
+      tags:
+      - account
   /account/{id}:
     get:
       description: Non-authenticated endpoint fetches account at specified key
@@ -232,26 +245,6 @@ paths:
       summary: Create account record
       tags:
       - account
-  /credentials:
-    post:
-      description: Non-authenticated endpoint that adds grafana and confluence-server users to an account. Assumes entries are pre-validated
-      parameters:
-      - description: Add credentials
-        in: body
-        name: account
-        required: true
-        schema:
-          $ref: '#/definitions/credentials.AddCredentialsV1'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/credentials.AddedCredentialsV1'
-      summary: Add credentials to an account
-      tags:
-      - credentials
   /credentials/check:
     post:
       description: Non-authenticated endpoint Check credentials for validity. Returns an array of user objects with check result

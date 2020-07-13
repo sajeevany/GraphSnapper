@@ -37,7 +37,7 @@ func (a *AerospikeWriter) WriteRecord(key string, record record.Record) error {
 	return a.WriteRecordWithASKey(asKey, record)
 }
 
-func (a *AerospikeWriter)  WriteRecordWithASKey(asKey *aerospike.Key, record record.Record) error{
+func (a *AerospikeWriter) WriteRecordWithASKey(asKey *aerospike.Key, record record.Record) error {
 
 	logger := a.asClient.Logger
 	logger.WithFields(record.GetFields()).Debug("Starting record create with aerospike key")

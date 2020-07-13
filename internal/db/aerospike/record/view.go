@@ -2,6 +2,7 @@ package record
 
 import (
 	"fmt"
+	"github.com/sajeevany/graph-snapper/internal/common"
 	"github.com/sirupsen/logrus"
 )
 
@@ -34,12 +35,14 @@ type CredentialsView1 struct {
 
 //GrafanaUser - Grafana user without API key information
 type GrafanaUser struct {
+	Auth        common.Auth
 	Host        string
 	Port        int
 	Description string
 }
 
 type ConfluenceServerUser struct {
+	Auth        common.Auth
 	Host        string
 	Port        int
 	Description string
