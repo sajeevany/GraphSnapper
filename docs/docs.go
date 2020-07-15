@@ -27,7 +27,7 @@ var doc = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/account/{id}": {
+        "/account/:id": {
             "get": {
                 "description": "Non-authenticated endpoint fetches account at specified key",
                 "produces": [
@@ -92,7 +92,7 @@ var doc = `{
                 }
             }
         },
-        "/account/{id}/credentials": {
+        "/account/:id/credentials": {
             "put": {
                 "description": "Non-authenticated endpoint that adds grafana and confluence-server users to an account. Assumes entries are pre-validated",
                 "produces": [

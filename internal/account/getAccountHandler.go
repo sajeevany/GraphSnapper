@@ -16,7 +16,7 @@ const GetAccountEndpoint = "/:id"
 //@Param id path string true "id"
 //@Success 200 {object} record.RecordViewV1
 //@Fail 404 {object} gin.H
-//@Router /account/{id} [get]
+//@Router /account/:id [get]
 //@Tags account
 func GetAccountV1(logger *logrus.Logger, aeroClient *aerospike.ASClient) gin.HandlerFunc {
 	return func(ctx *gin.Context) {

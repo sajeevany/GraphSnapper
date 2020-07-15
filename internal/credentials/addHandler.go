@@ -19,7 +19,7 @@ const PutCredentialsEndpoint = "/{accountID}"
 //@Success 200 {object} SetCredentialsV1
 //@Fail 404 {object} gin.H
 //@Fail 500 {object} gin.H
-//@Router /account/{id}/credentials [put]
+//@Router /account/:id/credentials [put]
 //@Tags account
 func PutCredentialsV1(logger *logrus.Logger, aeroClient *as.ASClient) gin.HandlerFunc {
 	return func(ctx *gin.Context) {

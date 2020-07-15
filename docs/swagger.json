@@ -11,7 +11,7 @@
     },
     "basePath": "/api/v1",
     "paths": {
-        "/account/{id}": {
+        "/account/:id": {
             "get": {
                 "description": "Non-authenticated endpoint fetches account at specified key",
                 "produces": [
@@ -76,7 +76,7 @@
                 }
             }
         },
-        "/account/{id}/credentials": {
+        "/account/:id/credentials": {
             "put": {
                 "description": "Non-authenticated endpoint that adds grafana and confluence-server users to an account. Assumes entries are pre-validated",
                 "produces": [
