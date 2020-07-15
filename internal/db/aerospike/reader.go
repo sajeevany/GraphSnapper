@@ -57,6 +57,7 @@ func (a *AerospikeReader) ReadRecord(key *aerospike.Key) (record.Record, error) 
 	aRecord, rErr := aeroClient.Get(a.asClient.ReadPolicy, key)
 	if rErr != nil {
 		logger.Errorf("Error when running client.Get operation for key <%v> err <%v>", key.String(), rErr)
+		return nil, rErr
 	}
 
 	//Get version

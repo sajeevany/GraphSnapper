@@ -63,7 +63,7 @@ func TestSetAuthHeader(t *testing.T) {
 			args: args{
 				auth: Auth{
 					BearerToken: BearerToken{},
-					Basic: Basic{},
+					Basic:       Basic{},
 				},
 				expectedAuthType: "",
 			},

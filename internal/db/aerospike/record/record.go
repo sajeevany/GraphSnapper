@@ -2,6 +2,7 @@ package record
 
 import (
 	"github.com/aerospike/aerospike-client-go"
+	"github.com/sajeevany/graph-snapper/internal/common"
 	"github.com/sirupsen/logrus"
 )
 
@@ -26,8 +27,8 @@ type Record interface {
 	ToASBinSlice() []*aerospike.Bin
 	//ToRecordViewV1 - converts to v1 record view
 	ToRecordViewV1() RecordViewV1
-	//AddUserCredentialsV1 - Adds input credentials to record. Does not overwrite any existing records
-	AddUserCredentialsV1([]DBGrafanaUser, []DBConfluenceServerUser)
+	//SetUserCredentialsV1 - Adds input credentials to record. Does not overwrite any existing records
+	SetUserCredentialsV1(*logrus.Logger, map[string]common.GrafanaUserV1, map[string]common.ConfluenceServerUserV1)
 }
 
 //Record - Aerospike configuration + credentials data
@@ -62,12 +63,15 @@ func (r *RecordV1) ToASBinSlice() []*aerospike.Bin {
 	}
 }
 
-func (r *RecordV1) AddUserCredentialsV1(grafanaUsers []DBGrafanaUser, confluenceUser []DBConfluenceServerUser) {
+//Add user details to record. Does not overwrite existing users
+func (r *RecordV1) SetUserCredentialsV1(logger *logrus.Logger, grafanaUsers map[string]common.GrafanaUserV1, confluenceUsers map[string]common.ConfluenceServerUserV1) {
 
-	//
-	for _, gu := range grafanaUsers {
-		index := getNextFreeIdx(r.Credentials.GrafanaAPIUsers, GrafanaAPIUserNamespace)
-		r.Credentials.GrafanaAPIUsers[index] = gu
-	}
+	logger.Info("Populating record")
+	//Add the grafana users
+	r.Credentials.GrafanaAPIUsers = grafanaUsers
 
+	//Add the confluence users
+	r.Credentials.ConfluenceServerAPIUsers = confluenceUsers
+
+	logger.WithFields(r.GetFields()).Info("Record populated")
 }

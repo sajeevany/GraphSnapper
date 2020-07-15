@@ -8,9 +8,8 @@ import (
 )
 
 const (
-	Group                    = "/credentials"
-	CheckCredentialsEndpoint = "check"
-	AddCredentialsEndpoint   = ""
+	CheckCredentialsEndpoint = "/credentials/check"
+	AddCredentialsEndpoint   = "/:id/credentials"
 )
 
 //@Summary Check credentials for validity

@@ -10,12 +10,56 @@ import (
 const (
 	BearerTokenAuthType = "BEARER_TOKEN"
 	BasicAuthType       = "BASIC"
+
+	//Should be identical to json name of Auth fields so that direct unmarshalling will work
+	BearerTokenASName = "BearerToken"
+	BasicASName       = "Basic"
 )
 
 //Auth
 type Auth struct {
 	BearerToken BearerToken
 	Basic       Basic
+}
+
+func (a Auth) GetRedactedLog() logrus.Fields {
+
+	if a.BearerToken != (BearerToken{}) {
+		return logrus.Fields{
+			"BearerToken": logging.RedactNonEmpty(a.BearerToken.Token),
+		}
+	}
+
+	if a.Basic != (Basic{}) {
+		return logrus.Fields{
+			"User":     logging.RedactNonEmpty(a.Basic.Username),
+			"Password": logging.RedactNonEmpty(a.Basic.Password),
+		}
+	}
+
+	return logrus.Fields{
+		"AuthContents": "Empty",
+	}
+}
+
+func (a Auth) GetRedactedView() Auth {
+	return Auth{
+		BearerToken: a.BearerToken.getRedactedView(),
+		Basic:       a.Basic.getRedactedView(),
+	}
+}
+
+//IsValid - returns the validity check result of the highest priority auth type provided
+func (a Auth) IsValid() bool {
+	if a.BearerToken != (BearerToken{}) {
+		return a.BearerToken.IsValid()
+	}
+
+	if a.Basic != (Basic{}) {
+		return a.Basic.IsValid()
+	}
+
+	return false
 }
 
 //SetAuthHeader - sets authentication header with the highest priority
@@ -58,15 +102,42 @@ func (a Auth) GetFields() logrus.Fields {
 	}
 }
 
+func (a Auth) ToAerospikeBinMap() map[string]interface{} {
+
+	authBM := make(map[string]interface{}, 2)
+	authBM[BearerTokenASName] = a.BearerToken.ToAerospikeBinMap()
+	authBM[BasicASName] = a.Basic.ToAerospikeBinMap()
+
+	return authBM
+}
+
 type Basic struct {
 	Username string
 	Password string
 }
 
-func (a Basic) GetFields() logrus.Fields {
+func (b Basic) GetFields() logrus.Fields {
 	return logrus.Fields{
-		"Username": logging.RedactNonEmpty(a.Username),
-		"Password": logging.RedactNonEmpty(a.Password),
+		"Username": logging.RedactNonEmpty(b.Username),
+		"Password": logging.RedactNonEmpty(b.Password),
+	}
+}
+
+func (b Basic) ToAerospikeBinMap() map[string]string {
+	return map[string]string{
+		"Username": b.Username,
+		"Password": b.Password,
+	}
+}
+
+func (b Basic) IsValid() bool {
+	return b.Username != "" && b.Password != ""
+}
+
+func (b Basic) getRedactedView() Basic {
+	return Basic{
+		Username: logging.RedactNonEmpty(b.Username),
+		Password: logging.RedactNonEmpty(b.Password),
 	}
 }
 
@@ -77,5 +148,21 @@ type BearerToken struct {
 func (a BearerToken) GetFields() logrus.Fields {
 	return logrus.Fields{
 		"Token": logging.RedactNonEmpty(a.Token),
+	}
+}
+
+func (bt BearerToken) ToAerospikeBinMap() map[string]string {
+	return map[string]string{
+		"Token": bt.Token,
+	}
+}
+
+func (a BearerToken) IsValid() bool {
+	return a.Token != ""
+}
+
+func (a BearerToken) getRedactedView() BearerToken {
+	return BearerToken{
+		Token: logging.RedactNonEmpty(a.Token),
 	}
 }

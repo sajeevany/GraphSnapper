@@ -2,6 +2,7 @@ package record
 
 import (
 	"fmt"
+	"github.com/sajeevany/graph-snapper/internal/common"
 	"github.com/sirupsen/logrus"
 )
 
@@ -28,12 +29,23 @@ type AccountViewV1 struct {
 
 //Credentials - Credentials for various graph and storage services
 type CredentialsView1 struct {
-	GrafanaUsers map[string]GrafanaUser `json:"GrafanaAPIUsers"`
+	GrafanaAPIUsers       map[string]GrafanaAPIUser       `json:"GrafanaAPIUsers"`
+	ConfluenceServerUsers map[string]ConfluenceServerUser `json:"ConfluenceServerUser"`
 }
 
-//GrafanaUser - Grafana user without API key information
-type GrafanaUser struct {
-	Description string `json:"Description"`
+//GrafanaAPIUser - Grafana user without API key information
+type GrafanaAPIUser struct {
+	Auth        common.Auth
+	Host        string
+	Port        int
+	Description string
+}
+
+type ConfluenceServerUser struct {
+	Auth        common.Auth
+	Host        string
+	Port        int
+	Description string
 }
 
 //IsValid - returns true if model is valid. Returns false if invalid and includes a non-nil error

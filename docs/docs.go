@@ -92,14 +92,14 @@ var doc = `{
                 }
             }
         },
-        "/credentials": {
-            "post": {
+        "/account/:id/credentials": {
+            "put": {
                 "description": "Non-authenticated endpoint that adds grafana and confluence-server users to an account. Assumes entries are pre-validated",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "credentials"
+                    "account"
                 ],
                 "summary": "Add credentials to an account",
                 "parameters": [
@@ -109,7 +109,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/credentials.AddCredentialsV1"
+                            "$ref": "#/definitions/credentials.SetCredentialsV1"
                         }
                     }
                 ],
@@ -117,7 +117,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/credentials.AddedCredentialsV1"
+                            "$ref": "#/definitions/credentials.SetCredentialsV1"
                         }
                     }
                 }
@@ -208,51 +208,12 @@ var doc = `{
                 }
             }
         },
-        "credentials.AddConfluenceServerUserV1": {
+        "common.ConfluenceServerUserV1": {
             "type": "object",
             "properties": {
-                "description": {
-                    "type": "string"
-                },
-                "host": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                },
-                "port": {
-                    "type": "integer"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "credentials.AddCredentialsV1": {
-            "type": "object",
-            "properties": {
-                "ConfluenceServerUsers": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/credentials.AddConfluenceServerUserV1"
-                    }
-                },
-                "GrafanaReadUsers": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/credentials.AddGrafanaReadUserV1"
-                    }
-                },
-                "accountID": {
-                    "type": "string"
-                }
-            }
-        },
-        "credentials.AddGrafanaReadUserV1": {
-            "type": "object",
-            "properties": {
-                "apikey": {
-                    "type": "string"
+                "auth": {
+                    "type": "object",
+                    "$ref": "#/definitions/common.Auth"
                 },
                 "description": {
                     "type": "string"
@@ -265,33 +226,34 @@ var doc = `{
                 }
             }
         },
-        "credentials.AddedCredentialsV1": {
+        "common.GrafanaUserV1": {
             "type": "object",
             "properties": {
-                "ConfluenceServerUsers": {
+                "auth": {
                     "type": "object",
-                    "additionalProperties": {
-                        "$ref": "#/definitions/credentials.AddConfluenceServerUserV1"
-                    }
+                    "$ref": "#/definitions/common.Auth"
                 },
-                "GrafanaReadUsers": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "$ref": "#/definitions/credentials.AddGrafanaReadUserV1"
-                    }
+                "description": {
+                    "type": "string"
+                },
+                "host": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "integer"
                 }
             }
         },
         "credentials.CheckCredentialsV1": {
             "type": "object",
             "properties": {
-                "confluenceServerUsers": {
+                "ConfluenceServerUsers": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/credentials.CheckUserV1"
                     }
                 },
-                "grafanaReadUsers": {
+                "GrafanaAPIUsers": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/credentials.CheckUserV1"
@@ -352,6 +314,23 @@ var doc = `{
                 }
             }
         },
+        "credentials.SetCredentialsV1": {
+            "type": "object",
+            "properties": {
+                "ConfluenceServerUsers": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/common.ConfluenceServerUserV1"
+                    }
+                },
+                "GrafanaAPIUsers": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/common.GrafanaUserV1"
+                    }
+                }
+            }
+        },
         "health.Ping": {
             "type": "object",
             "properties": {
@@ -373,22 +352,56 @@ var doc = `{
                 }
             }
         },
+        "record.ConfluenceServerUser": {
+            "type": "object",
+            "properties": {
+                "auth": {
+                    "type": "object",
+                    "$ref": "#/definitions/common.Auth"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "host": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "integer"
+                }
+            }
+        },
         "record.CredentialsView1": {
             "type": "object",
             "properties": {
+                "ConfluenceServerUser": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/record.ConfluenceServerUser"
+                    }
+                },
                 "GrafanaAPIUsers": {
                     "type": "object",
                     "additionalProperties": {
-                        "$ref": "#/definitions/record.GrafanaUser"
+                        "$ref": "#/definitions/record.GrafanaAPIUser"
                     }
                 }
             }
         },
-        "record.GrafanaUser": {
+        "record.GrafanaAPIUser": {
             "type": "object",
             "properties": {
-                "Description": {
+                "auth": {
+                    "type": "object",
+                    "$ref": "#/definitions/common.Auth"
+                },
+                "description": {
                     "type": "string"
+                },
+                "host": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "integer"
                 }
             }
         },

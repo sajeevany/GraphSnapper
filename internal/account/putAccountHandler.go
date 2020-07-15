@@ -51,7 +51,7 @@ func PutAccountV1(logger *logrus.Logger, aeroClient *aerospike.ASClient) gin.Han
 		}
 
 		//Create account
-		record, err := createAccount(logger, aeroClient, accountId, account)
+		record, err := CreateAccount(logger, aeroClient, accountId, account)
 		if err != nil {
 			hrErrMsg := fmt.Sprintf("internal error when writing record to aerospike. %v", err)
 			logger.WithFields(record.GetFields()).Errorf(hrErrMsg)
@@ -68,7 +68,7 @@ func PutAccountV1(logger *logrus.Logger, aeroClient *aerospike.ASClient) gin.Han
 }
 
 //assumes valid account
-func createAccount(logger *logrus.Logger, aeroClient *aerospike.ASClient, key string, account record.AccountViewV1) (*record.RecordV1, error) {
+func CreateAccount(logger *logrus.Logger, aeroClient *aerospike.ASClient, key string, account record.AccountViewV1) (*record.RecordV1, error) {
 
 	logger.Debug("Creating account record")
 
