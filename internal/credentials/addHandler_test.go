@@ -142,9 +142,8 @@ func TestPutCredentialsV1Integration(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			//setup and queue cleanup
-			accountID := "abcde"
 			logger := logrus.New()
-			tt.setup(logger, aeroClient, accountID)
+			tt.setup(logger, aeroClient, tt.accountID)
 			defer tt.cleanup(aeroClient)
 
 			//Build request

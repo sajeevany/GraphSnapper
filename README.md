@@ -14,6 +14,10 @@ Run unit tests:
 
     go test -short ./...
     
+Run integration tests(requires docker):
+
+    go test -run Integration ./...
+    
 Run unit and integration(requires docker):
 
     go test ./...
