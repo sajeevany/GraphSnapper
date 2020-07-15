@@ -109,7 +109,7 @@ func TestPutCredentialsV1Integration(t *testing.T) {
 			expected: expected{
 				returnCode: 200,
 				creds: record.CredentialsView1{
-					GrafanaAPIUsers: map[string] record.GrafanaAPIUser{
+					GrafanaAPIUsers: map[string]record.GrafanaAPIUser{
 						"gu_0": {
 							Auth: common.Auth{
 								BearerToken: common.BearerToken{
@@ -182,8 +182,8 @@ func TestPutCredentialsV1Integration(t *testing.T) {
 			if !reflect.DeepEqual(tt.expected.creds, creds.Credentials) {
 				t.Errorf("AddedCredentialsResponse does not match expected response. Expected <%#v>\n Actual <%#v>", tt.expected.creds, spew.Sdump(creds.Credentials))
 
-				t.Logf("Expected: %v",  spew.Sdump(tt.expected.creds))
-				t.Logf("Actual %v",spew.Sdump(creds.Credentials))
+				t.Logf("Expected: %v", spew.Sdump(tt.expected.creds))
+				t.Logf("Actual %v", spew.Sdump(creds.Credentials))
 
 			}
 		})

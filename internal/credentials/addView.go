@@ -26,7 +26,7 @@ func (a SetCredentialsV1) GetFields() logrus.Fields {
 	}
 
 	return logrus.Fields{
-		"GrafanaAPIUsers":      gru,
+		"GrafanaAPIUsers":       gru,
 		"ConfluenceServerUsers": csu,
 	}
 }
