@@ -19,12 +19,12 @@ type CredentialsV1 struct {
 
 func (c CredentialsV1) toCredentialsView1() CredentialsView1 {
 	cv := CredentialsView1{
-		GrafanaUsers:          make(map[string]GrafanaUser, len(c.GrafanaAPIUsers)),
+		GrafanaAPIUsers:       make(map[string]GrafanaAPIUser, len(c.GrafanaAPIUsers)),
 		ConfluenceServerUsers: make(map[string]ConfluenceServerUser, len(c.ConfluenceServerAPIUsers)),
 	}
 
 	for i, v := range c.GrafanaAPIUsers {
-		cv.GrafanaUsers[i] = GrafanaUser{
+		cv.GrafanaAPIUsers[i] = GrafanaAPIUser{
 			Auth:        v.Auth.GetRedactedView(),
 			Host:        v.Host,
 			Port:        v.Port,

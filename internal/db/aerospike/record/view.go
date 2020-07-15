@@ -29,12 +29,12 @@ type AccountViewV1 struct {
 
 //Credentials - Credentials for various graph and storage services
 type CredentialsView1 struct {
-	GrafanaUsers          map[string]GrafanaUser          `json:"GrafanaAPIUsers"`
+	GrafanaAPIUsers       map[string]GrafanaAPIUser       `json:"GrafanaAPIUsers"`
 	ConfluenceServerUsers map[string]ConfluenceServerUser `json:"ConfluenceServerUser"`
 }
 
-//GrafanaUser - Grafana user without API key information
-type GrafanaUser struct {
+//GrafanaAPIUser - Grafana user without API key information
+type GrafanaAPIUser struct {
 	Auth        common.Auth
 	Host        string
 	Port        int

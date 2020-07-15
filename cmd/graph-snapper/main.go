@@ -112,7 +112,7 @@ func addAccountEndpoints(rtr *gin.Engine, logger *logrus.Logger, aeroClient *aer
 		v1Api.GET(account.GetAccountEndpoint, account.GetAccountV1(logger, aeroClient))
 
 		//Credentials sub group
-		v1Api.POST(credentials.CheckCredentialsEndpoint, credentials.CheckV1(logger))
 		v1Api.PUT(credentials.AddCredentialsEndpoint, credentials.PutCredentialsV1(logger, aeroClient))
+		v1Api.POST(credentials.CheckCredentialsEndpoint, credentials.CheckV1(logger))
 	}
 }

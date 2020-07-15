@@ -7,7 +7,7 @@ import (
 
 //CheckCredentialsV1 - Set of credentials to be validated
 type CheckCredentialsV1 struct {
-	GrafanaReadUsers      []CheckUserV1 `json:"GrafanaReadUsers"`
+	GrafanaReadUsers      []CheckUserV1 `json:"GrafanaAPIUsers"`
 	ConfluenceServerUsers []CheckUserV1 `json:"ConfluenceServerUsers"`
 }
 

@@ -5,6 +5,7 @@ go 1.14
 require (
 	github.com/aerospike/aerospike-client-go v3.0.2+incompatible
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
+	github.com/davecgh/go-spew v1.1.1
 	github.com/docker/go-connections v0.4.0
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-openapi/spec v0.19.8 // indirect

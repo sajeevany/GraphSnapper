@@ -15,8 +15,8 @@ const PutCredentialsEndpoint = "/{accountID}"
 //@Summary Add credentials to an account
 //@Description Non-authenticated endpoint that adds grafana and confluence-server users to an account. Assumes entries are pre-validated
 //@Produce json
-//@Param account body AddedCredentialsV1 true "Add credentials"
-//@Success 200 {object} AddedCredentialsV1
+//@Param account body SetCredentialsV1 true "Add credentials"
+//@Success 200 {object} SetCredentialsV1
 //@Fail 404 {object} gin.H
 //@Fail 500 {object} gin.H
 //@Router /account/{id}/credentials [put]
@@ -34,7 +34,7 @@ func PutCredentialsV1(logger *logrus.Logger, aeroClient *as.ASClient) gin.Handle
 		}
 
 		//Bind add credentials object
-		var addReq AddedCredentialsV1
+		var addReq SetCredentialsV1
 		if bErr := ctx.BindJSON(&addReq); bErr != nil {
 			msg := fmt.Sprintf("Unable to bind request body to AddCredentialsV1 object %v", bErr)
 			logger.Errorf(msg)
@@ -83,7 +83,7 @@ func PutCredentialsV1(logger *logrus.Logger, aeroClient *as.ASClient) gin.Handle
 }
 
 //Checks if input is in acceptable and a record exists with the specified key. Returns a non-zero return code if an error is present. Returns no error and a statusOk(200).
-func validateRequest(logger *logrus.Logger, aeroClient *as.ASClient, accountID string, addReq AddedCredentialsV1) (error, int, *aerospike.Key, bool) {
+func validateRequest(logger *logrus.Logger, aeroClient *as.ASClient, accountID string, addReq SetCredentialsV1) (error, int, *aerospike.Key, bool) {
 
 	//Validate the account info. Checks if record exists with the ID
 	returnCode, aErr, actKey, actKeyExists := validateAcctID(logger, aeroClient, accountID)
@@ -93,7 +93,7 @@ func validateRequest(logger *logrus.Logger, aeroClient *as.ASClient, accountID s
 	}
 
 	//Validate grafana users
-	for _, gUser := range addReq.GrafanaReadUsers {
+	for _, gUser := range addReq.GrafanaAPIUsers {
 		//Validate input vars but don't validate for connectivity
 		if !gUser.IsValid() {
 			logger.WithFields(gUser.GetFields()).Errorf("Grafana user has invalid attributes")
@@ -138,7 +138,7 @@ func validateAcctID(logger *logrus.Logger, aeroClient *as.ASClient, id string) (
 }
 
 //setAccountUsers - adds specified users to the record at the specified account. Assumes that the record at the provided key has already been checked for existence
-func setAccountUsers(logger *logrus.Logger, client *as.ASClient, req AddedCredentialsV1, actKey *aerospike.Key) (record.Record, error) {
+func setAccountUsers(logger *logrus.Logger, client *as.ASClient, req SetCredentialsV1, actKey *aerospike.Key) (record.Record, error) {
 
 	logger.Debugf("Starting overwrite users to account with id <%v> operation", actKey.String())
 	//Get the current record
@@ -150,7 +150,7 @@ func setAccountUsers(logger *logrus.Logger, client *as.ASClient, req AddedCreden
 
 	//Update the local record copy and overwrite it in the db
 	logger.Debugf("Record has been read for account with id <%v>. ", actKey.String())
-	record.SetUserCredentialsV1(logger, req.GrafanaReadUsers, req.ConfluenceServerUsers)
+	record.SetUserCredentialsV1(logger, req.GrafanaAPIUsers, req.ConfluenceServerUsers)
 	if wErr := client.GetWriter().WriteRecordWithASKey(actKey, record); wErr != nil {
 		logger.Errorf("Error when writing record to db. err <%v>", wErr)
 		return record, wErr

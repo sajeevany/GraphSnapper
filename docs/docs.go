@@ -92,6 +92,37 @@ var doc = `{
                 }
             }
         },
+        "/account/{id}/credentials": {
+            "put": {
+                "description": "Non-authenticated endpoint that adds grafana and confluence-server users to an account. Assumes entries are pre-validated",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "account"
+                ],
+                "summary": "Add credentials to an account",
+                "parameters": [
+                    {
+                        "description": "Add credentials",
+                        "name": "account",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/credentials.SetCredentialsV1"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/credentials.SetCredentialsV1"
+                        }
+                    }
+                }
+            }
+        },
         "/credentials/check": {
             "post": {
                 "description": "Non-authenticated endpoint Check credentials for validity. Returns an array of user objects with check result",
@@ -138,37 +169,6 @@ var doc = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/health.Ping"
-                        }
-                    }
-                }
-            }
-        },
-        "/{id}/credentials": {
-            "put": {
-                "description": "Non-authenticated endpoint that adds grafana and confluence-server users to an account. Assumes entries are pre-validated",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "account"
-                ],
-                "summary": "Add credentials to an account",
-                "parameters": [
-                    {
-                        "description": "Add credentials",
-                        "name": "account",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/credentials.AddedCredentialsV1"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/credentials.AddedCredentialsV1"
                         }
                     }
                 }
@@ -244,23 +244,6 @@ var doc = `{
                 }
             }
         },
-        "credentials.AddedCredentialsV1": {
-            "type": "object",
-            "properties": {
-                "ConfluenceServerUsers": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "$ref": "#/definitions/common.ConfluenceServerUserV1"
-                    }
-                },
-                "GrafanaReadUsers": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "$ref": "#/definitions/common.GrafanaUserV1"
-                    }
-                }
-            }
-        },
         "credentials.CheckCredentialsV1": {
             "type": "object",
             "properties": {
@@ -270,7 +253,7 @@ var doc = `{
                         "$ref": "#/definitions/credentials.CheckUserV1"
                     }
                 },
-                "GrafanaReadUsers": {
+                "GrafanaAPIUsers": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/credentials.CheckUserV1"
@@ -331,6 +314,23 @@ var doc = `{
                 }
             }
         },
+        "credentials.SetCredentialsV1": {
+            "type": "object",
+            "properties": {
+                "ConfluenceServerUsers": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/common.ConfluenceServerUserV1"
+                    }
+                },
+                "GrafanaAPIUsers": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/common.GrafanaUserV1"
+                    }
+                }
+            }
+        },
         "health.Ping": {
             "type": "object",
             "properties": {
@@ -382,12 +382,12 @@ var doc = `{
                 "GrafanaAPIUsers": {
                     "type": "object",
                     "additionalProperties": {
-                        "$ref": "#/definitions/record.GrafanaUser"
+                        "$ref": "#/definitions/record.GrafanaAPIUser"
                     }
                 }
             }
         },
-        "record.GrafanaUser": {
+        "record.GrafanaAPIUser": {
             "type": "object",
             "properties": {
                 "auth": {
