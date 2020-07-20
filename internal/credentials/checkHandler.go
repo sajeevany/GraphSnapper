@@ -44,6 +44,7 @@ func CheckV1(logger *logrus.Logger) gin.HandlerFunc {
 		}
 
 		ctx.JSON(http.StatusOK, result)
+		logger.Debug("Check credentials request complete")
 	}
 }
 

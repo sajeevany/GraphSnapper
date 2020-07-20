@@ -26,6 +26,8 @@ services:
       - "3003:3003"
     volumes:
       - ./aerospike.conf:/etc/aerospike/aerospike.conf
+
+
 configs:
   aerospike:
     file: ./aerospile.conf

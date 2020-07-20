@@ -11,6 +11,7 @@ import (
 	"github.com/sajeevany/graph-snapper/internal/health"
 	"github.com/sajeevany/graph-snapper/internal/logging"
 	"github.com/sajeevany/graph-snapper/internal/logging/middleware"
+	"github.com/sajeevany/graph-snapper/internal/schedule"
 	"github.com/sirupsen/logrus"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/swaggo/gin-swagger/swaggerFiles"
@@ -96,6 +97,8 @@ func setupRouter(logger *logrus.Logger) *gin.Engine {
 func setupV1Routes(rtr *gin.Engine, logger *logrus.Logger, aeroClient *aerospike.ASClient) {
 	addHealthEndpoints(rtr, logger)
 	addAccountEndpoints(rtr, logger, aeroClient)
+	addCredentialsEndpoints(rtr, logger)
+	addScheduleEndpoints(rtr, logger)
 }
 
 func addHealthEndpoints(rtr *gin.Engine, logger *logrus.Logger) {
@@ -113,6 +116,19 @@ func addAccountEndpoints(rtr *gin.Engine, logger *logrus.Logger, aeroClient *aer
 
 		//Credentials sub group
 		v1Api.PUT(credentials.AddCredentialsEndpoint, credentials.PutCredentialsV1(logger, aeroClient))
+	}
+}
+
+func addCredentialsEndpoints(rtr *gin.Engine, logger *logrus.Logger) {
+	v1Api := rtr.Group(fmt.Sprintf("%s%s", v1Api, account.Group))
+	{
 		v1Api.POST(credentials.CheckCredentialsEndpoint, credentials.CheckV1(logger))
+	}
+}
+
+func addScheduleEndpoints(rtr *gin.Engine, logger *logrus.Logger) {
+	v1Api := rtr.Group(fmt.Sprintf("%s%s", v1Api, schedule.Group))
+	{
+		v1Api.POST(schedule.CheckEndpoint, schedule.CheckV1(logger))
 	}
 }

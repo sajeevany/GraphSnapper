@@ -20,7 +20,7 @@ const PutAccountEndpoint = "/:id"
 //@Param account body record.AccountViewV1 true "Create account"
 //@Success 200 {string} string "ok"
 //@Fail 404 {object} gin.H
-//@Router /account/:id [put]
+//@Router /account/{id} [put]
 //@Tags account
 func PutAccountV1(logger *logrus.Logger, aeroClient *aerospike.ASClient) gin.HandlerFunc {
 	return func(ctx *gin.Context) {

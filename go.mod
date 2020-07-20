@@ -14,7 +14,7 @@ require (
 	github.com/goodwithtech/dockle v0.2.4 // indirect
 	github.com/google/uuid v1.1.1 // indirect
 	github.com/json-iterator/go v1.1.10
-	github.com/lithammer/shortuuid v3.0.0+incompatible
+	github.com/lithammer/shortuuid v3.0.0+incompatible // indirect
 	github.com/mailru/easyjson v0.7.1 // indirect
 	github.com/mitchellh/mapstructure v1.3.2
 	github.com/onsi/ginkgo v1.13.0 // indirect
