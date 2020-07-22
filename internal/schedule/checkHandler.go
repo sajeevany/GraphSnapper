@@ -3,8 +3,11 @@ package schedule
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/sajeevany/graph-snapper/internal/grafana"
+	"github.com/sajeevany/graph-snapper/internal/report"
 	"github.com/sirupsen/logrus"
 	"net/http"
+	"time"
 )
 
 const (
@@ -16,7 +19,7 @@ const (
 //@Description Non-authenticated endpoint which checks and runs a schedule to validate connectivity and storage behaviour by the end user
 //@Produce json
 //@Param schedule body CheckScheduleV1 true "Check schedule"
-//@Success 200 {object} TestResponse
+//@Success 200 {object} report.CheckDashboardSnapshotReportV1
 //@Fail 400 {object} gin.H
 //@Fail 500 {object} gin.H
 //@Router /schedule/check [post]
@@ -34,33 +37,86 @@ func CheckV1(logger *logrus.Logger) gin.HandlerFunc {
 			return
 		}
 
-		code, err := checkScheduleV1(schedule)
-		if err != nil {
-			logger.Error("Received error when running checkScheduleV1. code <%v> err <%v>", code, err)
-			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		//Quick check if all required attributes are present
+		if isValid, err := schedule.IsValid(); !isValid {
+			ctx.JSON(http.StatusBadRequest, err)
 			return
 		}
-		ctx.Status(code)
+
+		//Run snapshot and upload process
+		report, err := snapshotAndUpload(schedule)
+		if err != nil {
+			logger.WithFields(schedule.GetFields()).Errorf("Error when running snapshotAndUpload err <%v>", err)
+			return
+		}
+
+		ctx.JSON(report.GetResultCode(), report.ToCheckScheduleV1View())
+
 	}
 }
 
-func checkScheduleV1(schedule CheckScheduleV1) (int, error) {
+//snapshotAndUpload -
+func snapshotAndUpload(logger *logrus.Logger, schedule CheckScheduleV1) (report.DashboardSnapshotReport, error) {
 
-	//check if input schedule has all required args
+	snapReport := report.DashboardSnapshotReport{
+		Title:     "CheckV1 schedule test",
+		Timestamp: time.Now(),
+	}
 
-	//check if grafana dashboard exists
+	//create snapshots, group, and upload as a subpage to the specified datastore(s)
+	for reqKey, dashboard := range schedule.GraphDashboards.GrafanaDashboards {
 
-	//for each panel create snapshot(has expiry)
+		dashReport := report.GrafanaDashboardReport{
+			Title:     fmt.Sprintf("Grafana dashboard <%s> snapshot panel report", dashboard.UID),
+			StartTime: time.Now(),
+			UID:       dashboard.UID,
+			Steps: report.Steps{
+				DashboardExistsCheck:  report.NewNotExecutedResult(),
+				PanelSnapshot:         nil,
+				BasicUILogin:          report.NewNotExecutedResult(),
+				PanelSnapshotDownload: nil,
+				DataStorePageCreation: report.NewNotExecutedResult(),
+				UploadSnapshots:       report.NewNotExecutedResult(),
+			},
+		}
+		snapReport.GrafanaDBReports[reqKey] = &dashReport
 
-	//run chromedb login
+		//check if specified dashboard exists. Get the dashboard information so it can be reused to create the snapshot
+		gdbExists, _, dashErr := grafana.DashboardExists(dashboard.UID, dashboard.Host, dashboard.Port, dashboard.User.Auth.Basic)
+		if dashErr != nil {
+			logger.Errorf("Internal error <%v> when checking if dashboard <%v> exists at host <%v> port <%v>", dashErr, dashboard.UID, dashboard.Host, dashboard.Port)
+			dashReport.Steps.DashboardExistsCheck = report.Result{
+				Result: false,
+				Cause:  "Internal error when checking dashboard for existence",
+			}
+			continue
+		}
+		if !gdbExists {
+			msg := fmt.Sprintf("Dashboard <%v> does not exist at host <%v> port <%v>", dashboard.UID, dashboard.Host, dashboard.Port)
+			logger.Debug(msg)
+			dashReport.Steps.DashboardExistsCheck = report.Result{
+				Result: false,
+				Cause:  msg,
+			}
+			continue
+		}
 
-	//build url to snapshot
+		//for each panel create snapshot(has expiry)
 
-	//screen shot each snapshot and save to local dir
+		//run chromedb login
 
-	//create page under parent page with correct file names
+		//build url to snapshot
 
-	//upload all attachments with name to page
+		//screen shot each snapshot and save to local dir
 
-	return http.StatusOK, nil
+		//create page under parent page with correct file names
+
+		//upload all attachments with name to page
+
+		//Close off report
+		dashReport.Finalize()
+
+	}
+
+	return snapReport, nil
 }

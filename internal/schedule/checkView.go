@@ -1,44 +1,70 @@
 package schedule
 
-import "github.com/sajeevany/graph-snapper/internal/common"
+import (
+	"github.com/sajeevany/graph-snapper/internal/common"
+	"github.com/sirupsen/logrus"
+)
 
 type CheckScheduleV1 struct {
 	GraphDashboards DashBoards
 	DataStores      DataStores
 }
 
+func (v CheckScheduleV1) IsValid() (bool, error) {
+
+	//TODO implement
+	return true, nil
+}
+
+func (v CheckScheduleV1) GetFields() logrus.Fields {
+	return logrus.Fields{
+		"DashBoards": v.GraphDashboards.GetFields(),
+		"DataStores": v.DataStores.GetFields(),
+	}
+}
+
 type DashBoards struct {
-	GrafanaDashboards GrafanaDashboards
+	GrafanaDashboards map[string]common.GrafanaDashBoard
 }
 
-type GrafanaDashboards struct {
-	Dashboards map[string]GrafanaDashBoard
-	User       common.GrafanaUserV1
-}
+func (b DashBoards) GetFields() logrus.Fields {
 
-type GrafanaDashBoard struct {
-	Host   string
-	Port   string
-	UID    string
-	Panels map[string]Panel //if empty include all panels, if non empty only do these panels
-}
+	grafanadb := make(logrus.Fields, len(b.GrafanaDashboards))
+	for key, db := range b.GrafanaDashboards {
+		grafanadb[key] = db.GetFields()
+	}
 
-type Panel struct {
-	ID    string
-	Title string
+	return logrus.Fields{
+		"GrafanaDashboards": grafanadb,
+	}
 }
 
 type DataStores struct {
-	ConfluencePages map[string]ConfluencePage
+	ConfluencePages map[string]ParentConfluencePage
 }
 
-//ConfluencePage defines the location in which pages will be created
-type ConfluencePage struct {
+func (s DataStores) GetFields() logrus.Fields {
+	pConf := make(logrus.Fields, len(s.ConfluencePages))
+	for key, cp := range s.ConfluencePages {
+		pConf[key] = cp.GetFields()
+	}
+
+	return logrus.Fields{
+		"ParentConfluencePage": pConf,
+	}
+}
+
+//ParentConfluencePage defines the parent location in which pages will be created as sub-pages
+type ParentConfluencePage struct {
 	SpaceKey     string
 	ParentPageID string
 	User         common.ConfluenceServerUserV1
 }
 
-type TestResponse struct {
-	DatastoreUrls []string
+func (p ParentConfluencePage) GetFields() logrus.Fields {
+	return logrus.Fields{
+		"SpaceKey":     p.SpaceKey,
+		"ParentPageID": p.ParentPageID,
+		"User":         p.User.GetFields(),
+	}
 }

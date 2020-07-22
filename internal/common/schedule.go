@@ -16,18 +16,6 @@ type GrafanaDashboards struct {
 	UserID     string
 }
 
-type GrafanaDashBoard struct {
-	Host   string
-	Port   string
-	UID    string
-	Panels map[string]Panel
-}
-
-type Panel struct {
-	ID    string
-	Title string
-}
-
 type DataStores struct {
 	ConfluencePages map[string]ConfluencePage
 }
