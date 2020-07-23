@@ -27,7 +27,38 @@ var doc = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/account/:id": {
+        "/account/:id/credentials": {
+            "put": {
+                "description": "Non-authenticated endpoint that adds grafana and confluence-server users to an account. Assumes entries are pre-validated",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "account"
+                ],
+                "summary": "Add credentials to an account",
+                "parameters": [
+                    {
+                        "description": "Add credentials",
+                        "name": "account",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/credentials.SetCredentialsV1"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/credentials.SetCredentialsV1"
+                        }
+                    }
+                }
+            }
+        },
+        "/account/{id}": {
             "get": {
                 "description": "Non-authenticated endpoint fetches account at specified key",
                 "produces": [
@@ -92,37 +123,6 @@ var doc = `{
                 }
             }
         },
-        "/account/:id/credentials": {
-            "put": {
-                "description": "Non-authenticated endpoint that adds grafana and confluence-server users to an account. Assumes entries are pre-validated",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "account"
-                ],
-                "summary": "Add credentials to an account",
-                "parameters": [
-                    {
-                        "description": "Add credentials",
-                        "name": "account",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/credentials.SetCredentialsV1"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/credentials.SetCredentialsV1"
-                        }
-                    }
-                }
-            }
-        },
         "/credentials/check": {
             "post": {
                 "description": "Non-authenticated endpoint Check credentials for validity. Returns an array of user objects with check result",
@@ -173,6 +173,37 @@ var doc = `{
                     }
                 }
             }
+        },
+        "/schedule/check": {
+            "post": {
+                "description": "Non-authenticated endpoint which checks and runs a schedule to validate connectivity and storage behaviour by the end user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "schedule"
+                ],
+                "summary": "Check and execute schedule",
+                "parameters": [
+                    {
+                        "description": "Check schedule",
+                        "name": "schedule",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schedule.CheckScheduleV1"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/report.CheckV1View"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -217,12 +248,38 @@ var doc = `{
                 },
                 "description": {
                     "type": "string"
+                }
+            }
+        },
+        "common.GrafanaDashBoard": {
+            "type": "object",
+            "properties": {
+                "excludePanelsIDs": {
+                    "description": "blank means exclude nothing",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "host": {
                     "type": "string"
                 },
+                "includePanelsIDs": {
+                    "description": "blank means include all panels. Will include newly added panels",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "port": {
                     "type": "integer"
+                },
+                "uid": {
+                    "type": "string"
+                },
+                "user": {
+                    "type": "object",
+                    "$ref": "#/definitions/common.GrafanaUserV1"
                 }
             }
         },
@@ -235,12 +292,6 @@ var doc = `{
                 },
                 "description": {
                     "type": "string"
-                },
-                "host": {
-                    "type": "string"
-                },
-                "port": {
-                    "type": "integer"
                 }
             }
         },
@@ -436,6 +487,59 @@ var doc = `{
                 "Metadata": {
                     "type": "object",
                     "$ref": "#/definitions/record.MetadataViewV1"
+                }
+            }
+        },
+        "report.CheckV1View": {
+            "type": "object"
+        },
+        "schedule.CheckScheduleV1": {
+            "type": "object",
+            "properties": {
+                "dataStores": {
+                    "type": "object",
+                    "$ref": "#/definitions/schedule.DataStores"
+                },
+                "graphDashboards": {
+                    "type": "object",
+                    "$ref": "#/definitions/schedule.DashBoards"
+                }
+            }
+        },
+        "schedule.DashBoards": {
+            "type": "object",
+            "properties": {
+                "grafana": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/common.GrafanaDashBoard"
+                    }
+                }
+            }
+        },
+        "schedule.DataStores": {
+            "type": "object",
+            "properties": {
+                "confluencePages": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/schedule.ParentConfluencePage"
+                    }
+                }
+            }
+        },
+        "schedule.ParentConfluencePage": {
+            "type": "object",
+            "properties": {
+                "parentPageID": {
+                    "type": "string"
+                },
+                "spaceKey": {
+                    "type": "string"
+                },
+                "user": {
+                    "type": "object",
+                    "$ref": "#/definitions/common.ConfluenceServerUserV1"
                 }
             }
         }

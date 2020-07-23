@@ -36,15 +36,11 @@ type CredentialsView1 struct {
 //GrafanaAPIUser - Grafana user without API key information
 type GrafanaAPIUser struct {
 	Auth        common.Auth
-	Host        string
-	Port        int
 	Description string
 }
 
 type ConfluenceServerUser struct {
 	Auth        common.Auth
-	Host        string
-	Port        int
 	Description string
 }
 

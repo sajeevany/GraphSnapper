@@ -87,15 +87,11 @@ func TestPutCredentialsV1Integration(t *testing.T) {
 							},
 							Basic: common.Basic{},
 						},
-						Host:        "test0.grafanahost.com",
-						Port:        8565,
 						Description: "test0 grafana auth",
 					},
 				},
 				ConfluenceServerUsers: map[string]common.ConfluenceServerUserV1{
 					"csu_0": {
-						Host:        "test0.host.com",
-						Port:        9220,
 						Description: "test0 confluence",
 						Auth: common.Auth{
 							Basic: common.Basic{
@@ -117,15 +113,11 @@ func TestPutCredentialsV1Integration(t *testing.T) {
 								},
 								Basic: common.Basic{},
 							},
-							Host:        "test0.grafanahost.com",
-							Port:        8565,
 							Description: "test0 grafana auth",
 						},
 					},
 					ConfluenceServerUsers: map[string]record.ConfluenceServerUser{
 						"csu_0": {
-							Host:        "test0.host.com",
-							Port:        9220,
 							Description: "test0 confluence",
 							Auth: common.Auth{
 								Basic: common.Basic{

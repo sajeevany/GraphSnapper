@@ -24,18 +24,18 @@ func (v CheckScheduleV1) GetFields() logrus.Fields {
 }
 
 type DashBoards struct {
-	GrafanaDashboards map[string]common.GrafanaDashBoard
+	Grafana map[string]common.GrafanaDashBoard
 }
 
 func (b DashBoards) GetFields() logrus.Fields {
 
-	grafanadb := make(logrus.Fields, len(b.GrafanaDashboards))
-	for key, db := range b.GrafanaDashboards {
+	grafanadb := make(logrus.Fields, len(b.Grafana))
+	for key, db := range b.Grafana {
 		grafanadb[key] = db.GetFields()
 	}
 
 	return logrus.Fields{
-		"GrafanaDashboards": grafanadb,
+		"Grafana": grafanadb,
 	}
 }
 

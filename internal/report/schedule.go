@@ -47,7 +47,7 @@ type Result struct {
 	Cause  string
 }
 
-func NewNotExecutedResult() Result{
+func NewNotExecutedResult() Result {
 	return Result{
 		Result: false,
 		Cause:  "Not executed",

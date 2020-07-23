@@ -28,10 +28,28 @@ definitions:
         type: object
       description:
         type: string
+    type: object
+  common.GrafanaDashBoard:
+    properties:
+      excludePanelsIDs:
+        description: blank means exclude nothing
+        items:
+          type: string
+        type: array
       host:
         type: string
+      includePanelsIDs:
+        description: blank means include all panels. Will include newly added panels
+        items:
+          type: string
+        type: array
       port:
         type: integer
+      uid:
+        type: string
+      user:
+        $ref: '#/definitions/common.GrafanaUserV1'
+        type: object
     type: object
   common.GrafanaUserV1:
     properties:
@@ -40,10 +58,6 @@ definitions:
         type: object
       description:
         type: string
-      host:
-        type: string
-      port:
-        type: integer
     type: object
   credentials.CheckCredentialsV1:
     properties:
@@ -174,6 +188,41 @@ definitions:
         $ref: '#/definitions/record.MetadataViewV1'
         type: object
     type: object
+  report.CheckV1View:
+    type: object
+  schedule.CheckScheduleV1:
+    properties:
+      dataStores:
+        $ref: '#/definitions/schedule.DataStores'
+        type: object
+      graphDashboards:
+        $ref: '#/definitions/schedule.DashBoards'
+        type: object
+    type: object
+  schedule.DashBoards:
+    properties:
+      grafana:
+        additionalProperties:
+          $ref: '#/definitions/common.GrafanaDashBoard'
+        type: object
+    type: object
+  schedule.DataStores:
+    properties:
+      confluencePages:
+        additionalProperties:
+          $ref: '#/definitions/schedule.ParentConfluencePage'
+        type: object
+    type: object
+  schedule.ParentConfluencePage:
+    properties:
+      parentPageID:
+        type: string
+      spaceKey:
+        type: string
+      user:
+        $ref: '#/definitions/common.ConfluenceServerUserV1'
+        type: object
+    type: object
 info:
   contact: {}
   description: Takes and updates snapshots from a graph service to a document store
@@ -182,7 +231,27 @@ info:
   title: Graph Snapper API
   version: "1.0"
 paths:
-  /account/:id:
+  /account/:id/credentials:
+    put:
+      description: Non-authenticated endpoint that adds grafana and confluence-server users to an account. Assumes entries are pre-validated
+      parameters:
+      - description: Add credentials
+        in: body
+        name: account
+        required: true
+        schema:
+          $ref: '#/definitions/credentials.SetCredentialsV1'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/credentials.SetCredentialsV1'
+      summary: Add credentials to an account
+      tags:
+      - account
+  /account/{id}:
     get:
       description: Non-authenticated endpoint fetches account at specified key
       parameters:
@@ -225,26 +294,6 @@ paths:
       summary: Create account record
       tags:
       - account
-  /account/:id/credentials:
-    put:
-      description: Non-authenticated endpoint that adds grafana and confluence-server users to an account. Assumes entries are pre-validated
-      parameters:
-      - description: Add credentials
-        in: body
-        name: account
-        required: true
-        schema:
-          $ref: '#/definitions/credentials.SetCredentialsV1'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/credentials.SetCredentialsV1'
-      summary: Add credentials to an account
-      tags:
-      - account
   /credentials/check:
     post:
       description: Non-authenticated endpoint Check credentials for validity. Returns an array of user objects with check result
@@ -278,4 +327,24 @@ paths:
       summary: Hello sanity endpoint
       tags:
       - health
+  /schedule/check:
+    post:
+      description: Non-authenticated endpoint which checks and runs a schedule to validate connectivity and storage behaviour by the end user
+      parameters:
+      - description: Check schedule
+        in: body
+        name: schedule
+        required: true
+        schema:
+          $ref: '#/definitions/schedule.CheckScheduleV1'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/report.CheckV1View'
+      summary: Check and execute schedule
+      tags:
+      - schedule
 swagger: "2.0"

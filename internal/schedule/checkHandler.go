@@ -19,7 +19,7 @@ const (
 //@Description Non-authenticated endpoint which checks and runs a schedule to validate connectivity and storage behaviour by the end user
 //@Produce json
 //@Param schedule body CheckScheduleV1 true "Check schedule"
-//@Success 200 {object} report.CheckDashboardSnapshotReportV1
+//@Success 200 {object} report.CheckV1View
 //@Fail 400 {object} gin.H
 //@Fail 500 {object} gin.H
 //@Router /schedule/check [post]
@@ -44,7 +44,7 @@ func CheckV1(logger *logrus.Logger) gin.HandlerFunc {
 		}
 
 		//Run snapshot and upload process
-		report, err := snapshotAndUpload(schedule)
+		report, err := snapshotAndUpload(logger, schedule)
 		if err != nil {
 			logger.WithFields(schedule.GetFields()).Errorf("Error when running snapshotAndUpload err <%v>", err)
 			return
@@ -64,7 +64,7 @@ func snapshotAndUpload(logger *logrus.Logger, schedule CheckScheduleV1) (report.
 	}
 
 	//create snapshots, group, and upload as a subpage to the specified datastore(s)
-	for reqKey, dashboard := range schedule.GraphDashboards.GrafanaDashboards {
+	for reqKey, dashboard := range schedule.GraphDashboards.Grafana {
 
 		dashReport := report.GrafanaDashboardReport{
 			Title:     fmt.Sprintf("Grafana dashboard <%s> snapshot panel report", dashboard.UID),
@@ -82,12 +82,12 @@ func snapshotAndUpload(logger *logrus.Logger, schedule CheckScheduleV1) (report.
 		snapReport.GrafanaDBReports[reqKey] = &dashReport
 
 		//check if specified dashboard exists. Get the dashboard information so it can be reused to create the snapshot
-		gdbExists, _, dashErr := grafana.DashboardExists(dashboard.UID, dashboard.Host, dashboard.Port, dashboard.User.Auth.Basic)
+		gdbExists, dashJson, dashErr := grafana.DashboardExists(logger, dashboard.UID, dashboard.Host, dashboard.Port, dashboard.User.Auth.Basic)
 		if dashErr != nil {
 			logger.Errorf("Internal error <%v> when checking if dashboard <%v> exists at host <%v> port <%v>", dashErr, dashboard.UID, dashboard.Host, dashboard.Port)
 			dashReport.Steps.DashboardExistsCheck = report.Result{
 				Result: false,
-				Cause:  "Internal error when checking dashboard for existence",
+				Cause:  dashErr.Error(),
 			}
 			continue
 		}
@@ -100,6 +100,8 @@ func snapshotAndUpload(logger *logrus.Logger, schedule CheckScheduleV1) (report.
 			}
 			continue
 		}
+
+		logger.Info(dashJson)
 
 		//for each panel create snapshot(has expiry)
 

@@ -3,34 +3,22 @@ package common
 import "github.com/sirupsen/logrus"
 
 type GrafanaDashBoard struct {
-	Host   string
-	Port   int
-	UID    string
-	Panels map[string]Panel //if empty include all panels, if non empty only do these panels
-	User   GrafanaUserV1
+	Host             string
+	Port             int
+	UID              string
+	IncludePanelsIDs []string //blank means include all panels. Will include newly added panels
+	ExcludePanelsIDs []string //blank means exclude nothing
+	User             GrafanaUserV1
 }
 
 func (b GrafanaDashBoard) GetFields() logrus.Fields {
 
-	panels := make(logrus.Fields, len(b.Panels))
-	for key, panel := range b.Panels {
-		panels[key] = panel.GetFields()
-	}
-
 	return logrus.Fields{
-		"Host":   b.Host,
-		"Port":   b.Port,
-		"UID":    b.UID,
-		"User":   b.User.GetFields(),
-		"Panels": panels,
+		"Host":             b.Host,
+		"Port":             b.Port,
+		"UID":              b.UID,
+		"User":             b.User.GetFields(),
+		"IncludePanelsIDs": b.IncludePanelsIDs,
+		"ExcludePanelsIDs": b.ExcludePanelsIDs,
 	}
-}
-
-type Panel struct {
-	Filler string
-}
-
-//GetFields - Filler method for now. At some point user will be able to specify snapshot size for this graph. This is preferable to a version bump
-func (p Panel) GetFields() logrus.Fields {
-	return logrus.Fields{}
 }
