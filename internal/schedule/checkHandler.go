@@ -3,6 +3,7 @@ package schedule
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/sajeevany/graph-snapper/internal/common"
 	"github.com/sajeevany/graph-snapper/internal/grafana"
 	"github.com/sajeevany/graph-snapper/internal/report"
 	"github.com/sirupsen/logrus"
@@ -39,6 +40,7 @@ func CheckV1(logger *logrus.Logger) gin.HandlerFunc {
 
 		//Quick check if all required attributes are present
 		if isValid, err := schedule.IsValid(); !isValid {
+			logger.Debug("Invalid schedule provided")
 			ctx.JSON(http.StatusBadRequest, err)
 			return
 		}
@@ -61,10 +63,13 @@ func snapshotAndUpload(logger *logrus.Logger, schedule CheckScheduleV1) (report.
 	snapReport := report.DashboardSnapshotReport{
 		Title:     "CheckV1 schedule test",
 		Timestamp: time.Now(),
+		GrafanaDBReports: make(map[string]*report.GrafanaDashboardReport, len(schedule.GraphDashboards.Grafana)),
 	}
 
 	//create snapshots, group, and upload as a subpage to the specified datastore(s)
 	for reqKey, dashboard := range schedule.GraphDashboards.Grafana {
+
+		logger.Debugf("Starting snapshot and upload for grafana dashboard <%v>", reqKey)
 
 		dashReport := report.GrafanaDashboardReport{
 			Title:     fmt.Sprintf("Grafana dashboard <%s> snapshot panel report", dashboard.UID),
@@ -72,6 +77,7 @@ func snapshotAndUpload(logger *logrus.Logger, schedule CheckScheduleV1) (report.
 			UID:       dashboard.UID,
 			Steps: report.Steps{
 				DashboardExistsCheck:  report.NewNotExecutedResult(),
+				ExtractPanelID:        report.NewNotExecutedResult(),
 				PanelSnapshot:         nil,
 				BasicUILogin:          report.NewNotExecutedResult(),
 				PanelSnapshotDownload: nil,
@@ -83,25 +89,17 @@ func snapshotAndUpload(logger *logrus.Logger, schedule CheckScheduleV1) (report.
 
 		//check if specified dashboard exists. Get the dashboard information so it can be reused to create the snapshot
 		gdbExists, dashJson, dashErr := grafana.DashboardExists(logger, dashboard.UID, dashboard.Host, dashboard.Port, dashboard.User.Auth.Basic)
-		if dashErr != nil {
-			logger.Errorf("Internal error <%v> when checking if dashboard <%v> exists at host <%v> port <%v>", dashErr, dashboard.UID, dashboard.Host, dashboard.Port)
-			dashReport.Steps.DashboardExistsCheck = report.Result{
-				Result: false,
-				Cause:  dashErr.Error(),
-			}
-			continue
-		}
-		if !gdbExists {
-			msg := fmt.Sprintf("Dashboard <%v> does not exist at host <%v> port <%v>", dashboard.UID, dashboard.Host, dashboard.Port)
-			logger.Debug(msg)
-			dashReport.Steps.DashboardExistsCheck = report.Result{
-				Result: false,
-				Cause:  msg,
-			}
+		if setFailedResult := setDashExistsResult(logger, dashErr, dashboard, &dashReport, gdbExists); setFailedResult{
 			continue
 		}
 
-		logger.Info(dashJson)
+		//Get panels to be snapshotted
+		panelIDs, pErr := grafana.GetPanelsIDs(dashJson, dashboard.IncludePanelsIDs, dashboard.ExcludePanelsIDs)
+		if setFailedResult := setGetPanelIDsResult(logger, pErr, dashReport); setFailedResult{
+			continue
+		}
+
+		logger.Info(panelIDs)
 
 		//for each panel create snapshot(has expiry)
 
@@ -121,4 +119,45 @@ func snapshotAndUpload(logger *logrus.Logger, schedule CheckScheduleV1) (report.
 	}
 
 	return snapReport, nil
+}
+
+func setGetPanelIDsResult(logger *logrus.Logger, pErr error, dashReport report.GrafanaDashboardReport) bool{
+
+	if pErr != nil {
+		logger.Errorf("Unable to parse grafana dashboard API response. <%v>", pErr)
+		dashReport.Steps.ExtractPanelID = report.Result{
+			Result: false,
+			Cause:  pErr.Error(),
+		}
+		return true
+	}
+
+	dashReport.Steps.ExtractPanelID = report.Result{
+		Result: true,
+	}
+	return false
+}
+
+func setDashExistsResult(logger *logrus.Logger, dashErr error, dashboard common.GrafanaDashBoard, dashReport *report.GrafanaDashboardReport, gdbExists bool) bool{
+	if dashErr != nil {
+		logger.Errorf("Internal error <%v> when checking if dashboard <%v> exists at host <%v> port <%v>", dashErr, dashboard.UID, dashboard.Host, dashboard.Port)
+		dashReport.Steps.DashboardExistsCheck = report.Result{
+			Result: false,
+			Cause:  dashErr.Error(),
+		}
+		return true
+	}
+	if !gdbExists {
+		msg := fmt.Sprintf("Dashboard <%v> does not exist at host <%v> port <%v>", dashboard.UID, dashboard.Host, dashboard.Port)
+		logger.Debug(msg)
+		dashReport.Steps.DashboardExistsCheck = report.Result{
+			Result: false,
+			Cause:  msg,
+		}
+		return true
+	}
+	dashReport.Steps.DashboardExistsCheck = report.Result{
+		Result: true,
+	}
+	return false
 }

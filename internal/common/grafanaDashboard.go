@@ -6,8 +6,8 @@ type GrafanaDashBoard struct {
 	Host             string
 	Port             int
 	UID              string
-	IncludePanelsIDs []string //blank means include all panels. Will include newly added panels
-	ExcludePanelsIDs []string //blank means exclude nothing
+	IncludePanelsIDs []int //blank means include all panels. Will include newly added panels
+	ExcludePanelsIDs []int //blank means exclude nothing. New panels will be automatically included
 	User             GrafanaUserV1
 }
 

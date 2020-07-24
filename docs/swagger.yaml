@@ -137,10 +137,6 @@ definitions:
         type: object
       description:
         type: string
-      host:
-        type: string
-      port:
-        type: integer
     type: object
   record.CredentialsView1:
     properties:
@@ -160,10 +156,6 @@ definitions:
         type: object
       description:
         type: string
-      host:
-        type: string
-      port:
-        type: integer
     type: object
   record.MetadataViewV1:
     properties:

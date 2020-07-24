@@ -412,12 +412,6 @@ var doc = `{
                 },
                 "description": {
                     "type": "string"
-                },
-                "host": {
-                    "type": "string"
-                },
-                "port": {
-                    "type": "integer"
                 }
             }
         },
@@ -447,12 +441,6 @@ var doc = `{
                 },
                 "description": {
                     "type": "string"
-                },
-                "host": {
-                    "type": "string"
-                },
-                "port": {
-                    "type": "integer"
                 }
             }
         },

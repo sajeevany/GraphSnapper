@@ -32,7 +32,7 @@ func DashboardExists(logger *logrus.Logger, uid, host string, port int, user com
 
 	//create client with timeout
 	client := &http.Client{
-		Timeout: 15 * time.Millisecond,
+		Timeout: 150 * time.Millisecond,
 	}
 
 	//Send request
@@ -51,7 +51,7 @@ func DashboardExists(logger *logrus.Logger, uid, host string, port int, user com
 
 	//Get body
 	body, readErr := ioutil.ReadAll(resp.Body)
-	if readErr == nil {
+	if readErr != nil {
 		logger.Errorf("Unable to read response body from request <%v>. err <%v>", requestUrl, readErr)
 		return false, nil, err
 	}
@@ -64,4 +64,90 @@ func DashboardExists(logger *logrus.Logger, uid, host string, port int, user com
 	}
 
 	return true, dash[dashboardKey], nil
+}
+
+//Simplified dashboard for marshalling desired pane id
+type dashboard struct {
+	Panels []panel `json:"panels"`
+}
+
+type panel struct{
+	ID int `json:"id"`
+}
+
+func GetPanelsIDs(msg json.RawMessage, includeIDs, excludeIDs []int) ([]int, error){
+
+	//Check if msg is non-zero
+	if msg == nil || len(msg) == 0{
+		return []int{}, nil
+	}
+
+	//Parse raw json
+	var dash dashboard
+	if uErr := json.Unmarshal(msg, &dash); uErr != nil{
+		return nil, uErr
+	}
+
+	//Get panels
+	panels := make(map[int]struct{})
+	for _, v := range dash.Panels{
+		panels[v.ID] = struct{}{}
+	}
+
+
+	return filterPanels(panels, includeIDs, excludeIDs), nil
+}
+
+func filterPanels(panels map[int]struct{}, include, exclude []int) []int{
+
+	//Validate input
+	if panels == nil {
+		return nil
+	}
+	if len(panels) == 0 {
+		return []int{}
+	}
+
+	//filter panels. Inclusion list takes priority over exclusion list
+	if len(include) > 0 {
+		//restrictive include - schedule will only ever snapshot these panels. New panels will not be included
+		var pInc []int
+		for _, v := range include{
+			//If a value exists in the inclusion slice then add it to included panels slice
+			if _, exists := panels[v]; exists{
+				pInc = append(pInc, v)
+			}
+		}
+		return pInc
+	}else if len(exclude) > 0 {
+		//restrictive exclude - schedule will only exclude these panels. New panels will be automatically included
+		for _, v := range exclude{
+			//Delete an ID from the map of panels if it exists in the exclusion slice
+			if _, exists := panels[v]; exists{
+				delete(panels, v)
+			}
+		}
+		return mapToSlice(panels)
+	}
+
+	//If no inclusion/exclusion slices are provided then every panel is eligible
+	return mapToSlice(panels)
+}
+
+func mapToSlice(panels map[int]struct{}) []int{
+
+	//Validate input
+	if panels == nil {
+		return nil
+	}
+
+	//Create slice to return
+	slc := make([]int, len(panels))
+
+	ctr := 0
+	for key := range panels{
+		slc[ctr] = key
+		ctr++
+	}
+	return slc
 }
