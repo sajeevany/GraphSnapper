@@ -36,7 +36,7 @@ func (r GrafanaDashboardReport) Finalize() {
 type Steps struct {
 	DashboardExistsCheck  Result
 	ExtractPanelID        Result
-	PanelSnapshot         map[string]Result
+	DashboardSnapshot     Result
 	BasicUILogin          Result
 	PanelSnapshotDownload map[string]Result
 	DataStorePageCreation Result

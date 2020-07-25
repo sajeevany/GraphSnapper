@@ -1,6 +1,7 @@
 package schedule
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/sajeevany/graph-snapper/internal/common"
@@ -61,8 +62,8 @@ func CheckV1(logger *logrus.Logger) gin.HandlerFunc {
 func snapshotAndUpload(logger *logrus.Logger, schedule CheckScheduleV1) (report.DashboardSnapshotReport, error) {
 
 	snapReport := report.DashboardSnapshotReport{
-		Title:     "CheckV1 schedule test",
-		Timestamp: time.Now(),
+		Title:            "CheckV1 schedule test",
+		Timestamp:        time.Now(),
 		GrafanaDBReports: make(map[string]*report.GrafanaDashboardReport, len(schedule.GraphDashboards.Grafana)),
 	}
 
@@ -78,7 +79,7 @@ func snapshotAndUpload(logger *logrus.Logger, schedule CheckScheduleV1) (report.
 			Steps: report.Steps{
 				DashboardExistsCheck:  report.NewNotExecutedResult(),
 				ExtractPanelID:        report.NewNotExecutedResult(),
-				PanelSnapshot:         nil,
+				DashboardSnapshot:     report.NewNotExecutedResult(),
 				BasicUILogin:          report.NewNotExecutedResult(),
 				PanelSnapshotDownload: nil,
 				DataStorePageCreation: report.NewNotExecutedResult(),
@@ -89,19 +90,24 @@ func snapshotAndUpload(logger *logrus.Logger, schedule CheckScheduleV1) (report.
 
 		//check if specified dashboard exists. Get the dashboard information so it can be reused to create the snapshot
 		gdbExists, dashJson, dashErr := grafana.DashboardExists(logger, dashboard.UID, dashboard.Host, dashboard.Port, dashboard.User.Auth.Basic)
-		if setFailedResult := setDashExistsResult(logger, dashErr, dashboard, &dashReport, gdbExists); setFailedResult{
+		if setFailedResult := setDashExistsResult(logger, dashErr, dashboard, &dashReport, gdbExists); setFailedResult {
 			continue
 		}
 
-		//Get panels to be snapshotted
+		//Get panels to be screencaptured. Skip dashboard if no panels are to be captured
 		panelIDs, pErr := grafana.GetPanelsIDs(dashJson, dashboard.IncludePanelsIDs, dashboard.ExcludePanelsIDs)
-		if setFailedResult := setGetPanelIDsResult(logger, pErr, dashReport); setFailedResult{
+		if setFailedResult := setGetPanelIDsResult(logger, pErr, &dashReport, panelIDs, dashboard.IncludePanelsIDs, dashboard.ExcludePanelsIDs, dashJson); setFailedResult {
 			continue
 		}
 
-		logger.Info(panelIDs)
-
-		//for each panel create snapshot(has expiry)
+		//create dashboard snapshot
+		endTime := time.Now()
+		startTime := endTime.AddDate(0, 0, -1)
+		expiry := time.Now().AddDate(0, 0, 0)
+		gs, sErr := grafana.CreateSnapshot(logger, dashboard.Host, dashboard.Port, dashboard.User.Auth.Basic, startTime, endTime, expiry, dashJson)
+		if setFailedResult := setDashBoardSnapshotResult(logger, sErr, &dashReport); setFailedResult {
+			continue
+		}
 
 		//run chromedb login
 
@@ -121,7 +127,21 @@ func snapshotAndUpload(logger *logrus.Logger, schedule CheckScheduleV1) (report.
 	return snapReport, nil
 }
 
-func setGetPanelIDsResult(logger *logrus.Logger, pErr error, dashReport report.GrafanaDashboardReport) bool{
+func setDashBoardSnapshotResult(logger *logrus.Logger, err error, g *report.GrafanaDashboardReport) bool {
+
+	if err != nil {
+		logger.Errorf("Unable to create snapshot for dashboard <%v>. err <%v>", g.UID, err)
+		g.Steps.DashboardSnapshot = report.Result{
+			Result: false,
+			Cause:  err.Error(),
+		}
+		return true
+	}
+
+	return false
+}
+
+func setGetPanelIDsResult(logger *logrus.Logger, pErr error, dashReport *report.GrafanaDashboardReport, ids, includeIDs, excludeIDs []int, dashJson json.RawMessage) bool {
 
 	if pErr != nil {
 		logger.Errorf("Unable to parse grafana dashboard API response. <%v>", pErr)
@@ -132,13 +152,24 @@ func setGetPanelIDsResult(logger *logrus.Logger, pErr error, dashReport report.G
 		return true
 	}
 
+	if len(ids) == 0 {
+		//No panels left to be recorded
+		msg := fmt.Sprintf("No panels ids remaining after applying inclusion <%v> and exclusion <%v> lists to dashboard result <%v>", includeIDs, excludeIDs, dashJson)
+		logger.Info(msg)
+		dashReport.Steps.ExtractPanelID = report.Result{
+			Result: false,
+			Cause:  msg,
+		}
+		return true
+	}
+
 	dashReport.Steps.ExtractPanelID = report.Result{
 		Result: true,
 	}
 	return false
 }
 
-func setDashExistsResult(logger *logrus.Logger, dashErr error, dashboard common.GrafanaDashBoard, dashReport *report.GrafanaDashboardReport, gdbExists bool) bool{
+func setDashExistsResult(logger *logrus.Logger, dashErr error, dashboard common.GrafanaDashBoard, dashReport *report.GrafanaDashboardReport, gdbExists bool) bool {
 	if dashErr != nil {
 		logger.Errorf("Internal error <%v> when checking if dashboard <%v> exists at host <%v> port <%v>", dashErr, dashboard.UID, dashboard.Host, dashboard.Port)
 		dashReport.Steps.DashboardExistsCheck = report.Result{
