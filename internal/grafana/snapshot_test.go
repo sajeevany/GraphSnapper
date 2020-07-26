@@ -11,7 +11,13 @@ import (
 	"time"
 )
 
-func TestCreateGetSnapshot(t *testing.T) {
+func TestCreateGetSnapshotIntegration(t *testing.T) {
+
+	//Skip test if user wants to only run regression tests
+	if testing.Short() {
+		t.Skip()
+	}
+
 	type args struct {
 		logger    *logrus.Logger
 		host      string
@@ -161,7 +167,7 @@ func Test_validateAndGetExpiration(t *testing.T) {
 				expiry:        now.AddDate(0, 0, 2),
 				minimumExpiry: 10 * time.Second,
 			},
-			expirationInSeconds: int(now.AddDate(0,0,2).Sub(now).Seconds()),
+			expirationInSeconds: int(now.AddDate(0, 0, 2).Sub(now).Seconds()),
 		},
 		{
 			name: "test1: GetExpiration with expiration that below minimum",

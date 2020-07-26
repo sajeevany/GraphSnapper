@@ -32,16 +32,16 @@ definitions:
   common.GrafanaDashBoard:
     properties:
       excludePanelsIDs:
-        description: blank means exclude nothing
+        description: blank means exclude nothing. New panels will be automatically included
         items:
-          type: string
+          type: integer
         type: array
       host:
         type: string
       includePanelsIDs:
         description: blank means include all panels. Will include newly added panels
         items:
-          type: string
+          type: integer
         type: array
       port:
         type: integer

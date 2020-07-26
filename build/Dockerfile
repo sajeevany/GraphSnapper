@@ -8,9 +8,8 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -ldflags "-X main.GIT_COMMIT=$GIT_COMMIT -X main.CONFIG_FILE=/app/config/graph-snapper-conf.json" -o main cmd/graph-snapper/main.go
 RUN swag init -g cmd/graph-snapper/main.go -o ./docs
 
-from alpine:latest
+from chromedp/headless-shell:latest
 ARG CONFIG_FILE
-RUN apk --no-cache add ca-certificates
 RUN mkdir /app
 RUN mkdir /app/config
 RUN mkdir /app/logs

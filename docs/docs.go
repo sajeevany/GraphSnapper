@@ -255,10 +255,10 @@ var doc = `{
             "type": "object",
             "properties": {
                 "excludePanelsIDs": {
-                    "description": "blank means exclude nothing",
+                    "description": "blank means exclude nothing. New panels will be automatically included",
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "type": "integer"
                     }
                 },
                 "host": {
@@ -268,7 +268,7 @@ var doc = `{
                     "description": "blank means include all panels. Will include newly added panels",
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "type": "integer"
                     }
                 },
                 "port": {

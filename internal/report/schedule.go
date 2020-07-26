@@ -37,10 +37,13 @@ type Steps struct {
 	DashboardExistsCheck  Result
 	ExtractPanelID        Result
 	DashboardSnapshot     Result
+	CreateDownloadDir     Result
 	BasicUILogin          Result
-	PanelSnapshotDownload map[string]Result
+	PanelSnapshotDownload map[int]Result
 	DataStorePageCreation Result
 	UploadSnapshots       Result
+	DeleteSnapshot        Result
+	DeleteDownloadDir     Result
 }
 
 type Result struct {

@@ -72,7 +72,7 @@ type dashboard struct {
 }
 
 type panel struct {
-	ID int `json:"snapshotId"`
+	ID int `json:"id"`
 }
 
 func GetPanelsIDs(msg json.RawMessage, includeIDs, excludeIDs []int) ([]int, error) {
