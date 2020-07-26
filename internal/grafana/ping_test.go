@@ -136,7 +136,7 @@ func TestIsValidLogin(t *testing.T) {
 				return
 			}
 			if got != tt.want {
-				t.Errorf("IsValidLogin() got = %v, want %v", got, tt.want)
+				t.Errorf("IsValidLogin() got = %v, expirationInSeconds %v", got, tt.want)
 			}
 		})
 	}

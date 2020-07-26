@@ -102,7 +102,7 @@ func Test_filterPanels(t *testing.T) {
 			got := filterPanels(tt.args.panels, tt.args.include, tt.args.exclude)
 			sort.Ints(got)
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("filterPanels() = %v, want %v", got, tt.want)
+				t.Errorf("filterPanels() = %v, expirationInSeconds %v", got, tt.want)
 			}
 		})
 	}
