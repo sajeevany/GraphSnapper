@@ -66,20 +66,28 @@ func DashboardExists(logger *logrus.Logger, uid, host string, port int, user com
 	return true, dash[dashboardKey], nil
 }
 
-//Simplified dashboard for marshalling desired pane snapshotId
+//Simplified dashboard for marshalling desired panel
 type dashboard struct {
 	Panels []panel `json:"panels"`
 }
 
 type panel struct {
-	ID int `json:"id"`
+	ID    int    `json:"id"`
+	Title string `json:"title"`
 }
 
-func GetPanelsIDs(msg json.RawMessage, includeIDs, excludeIDs []int) ([]int, error) {
+//PanelDescriptor - panel description used to describe panel for upload operation
+type PanelDescriptor struct {
+	Title       string
+	SnapshotURL string
+	ID          int
+}
+
+func GetPanelsDescriptors(msg json.RawMessage, includeIDs, excludeIDs []int) ([]PanelDescriptor, error) {
 
 	//Check if msg is non-zero
 	if msg == nil || len(msg) == 0 {
-		return []int{}, nil
+		return make([]PanelDescriptor, 0), nil
 	}
 
 	//Parse raw json
@@ -89,32 +97,35 @@ func GetPanelsIDs(msg json.RawMessage, includeIDs, excludeIDs []int) ([]int, err
 	}
 
 	//Get panels
-	panels := make(map[int]struct{})
+	panels := make(map[int]PanelDescriptor)
 	for _, v := range dash.Panels {
-		panels[v.ID] = struct{}{}
+		panels[v.ID] = PanelDescriptor{
+			Title: v.Title,
+			ID:    v.ID,
+		}
 	}
 
 	return filterPanels(panels, includeIDs, excludeIDs), nil
 }
 
-func filterPanels(panels map[int]struct{}, include, exclude []int) []int {
+func filterPanels(panels map[int]PanelDescriptor, include, exclude []int) []PanelDescriptor {
 
 	//Validate input
 	if panels == nil {
 		return nil
 	}
 	if len(panels) == 0 {
-		return []int{}
+		return make([]PanelDescriptor, 0)
 	}
 
 	//filter panels. Inclusion list takes priority over exclusion list
 	if len(include) > 0 {
 		//restrictive include - schedule will only ever snapshot these panels. New panels will not be included
-		var pInc []int
+		var pInc []PanelDescriptor
 		for _, v := range include {
 			//If a value exists in the inclusion slice then add it to included panels slice
-			if _, exists := panels[v]; exists {
-				pInc = append(pInc, v)
+			if panelSnap, exists := panels[v]; exists {
+				pInc = append(pInc, panelSnap)
 			}
 		}
 		return pInc
@@ -133,7 +144,7 @@ func filterPanels(panels map[int]struct{}, include, exclude []int) []int {
 	return mapToSlice(panels)
 }
 
-func mapToSlice(panels map[int]struct{}) []int {
+func mapToSlice(panels map[int]PanelDescriptor) []PanelDescriptor {
 
 	//Validate input
 	if panels == nil {
@@ -141,12 +152,10 @@ func mapToSlice(panels map[int]struct{}) []int {
 	}
 
 	//Create slice to return
-	slc := make([]int, len(panels))
+	slc := make([]PanelDescriptor, len(panels))
 
-	ctr := 0
-	for key := range panels {
-		slc[ctr] = key
-		ctr++
+	for index, panel := range panels {
+		slc[index] = panel
 	}
 	return slc
 }

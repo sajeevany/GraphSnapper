@@ -7,12 +7,14 @@ import (
 	"github.com/chromedp/chromedp"
 	"github.com/gin-gonic/gin"
 	"github.com/sajeevany/graph-snapper/internal/common"
+	"github.com/sajeevany/graph-snapper/internal/confluence"
 	"github.com/sajeevany/graph-snapper/internal/grafana"
 	"github.com/sajeevany/graph-snapper/internal/report"
 	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -58,7 +60,6 @@ func CheckV1(logger *logrus.Logger) gin.HandlerFunc {
 		}
 
 		ctx.JSON(report.GetResultCode(), report.ToCheckScheduleV1View())
-
 	}
 }
 
@@ -76,10 +77,18 @@ func snapshotAndUpload(logger *logrus.Logger, schedule CheckScheduleV1) (report.
 
 		logger.Debugf("Starting snapshot and upload for grafana dashboard <%v>", reqKey)
 
-		report, err := recordDashboardPanels(logger, dashboard)
+		images, imgDir, report, err := captureDashboardPanels(logger, dashboard)
 		snapReport.GrafanaDBReports[reqKey] = report
 		if err != nil {
-			logger.Errorf("Failed to perform snapshotAndUpload action for dash board <%v>. err <%v>", dashboard, err)
+			logger.Errorf("Failed to perform captureDashboardPanels action for dash board <%v>. err <%v>", dashboard, err)
+			continue
+		}
+		defer deleteDir(logger, &report.Steps.DeleteDownloadDir, imgDir)
+
+		//Create datastore page and upload impages
+		uErr := uploadImages(logger, report, dashboard.UID, schedule.DataStores, images)
+		if uErr != nil {
+			logger.Errorf("Failed to upload images to specified datastores <%+v>. err <%v>", schedule.DataStores, uErr)
 			continue
 		}
 	}
@@ -87,7 +96,28 @@ func snapshotAndUpload(logger *logrus.Logger, schedule CheckScheduleV1) (report.
 	return snapReport, nil
 }
 
-func recordDashboardPanels(logger *logrus.Logger, dashboard common.GrafanaDashBoard) (*report.GrafanaDashboardReport, error) {
+func uploadImages(logger *logrus.Logger, rep *report.GrafanaDashboardReport, dashboardUID string, stores DataStores, images map[grafana.PanelDescriptor]string) error {
+
+	logger.Debug("Starting image upload to datastores()")
+
+	//Create and upload images to confluence page
+	for _, parent := range stores.ConfluencePages {
+		//Create title for page
+		now := time.Now().Format(time.RFC1123)
+		pageName := fmt.Sprintf("%s_%s", dashboardUID, strings.Replace(now, " ", "", -1))
+
+		//Create page
+		pageID, pErr := confluence.CreatePage(logger, pageName, parent.SpaceKey, parent.ParentPageID, parent.User, images)
+		if pErr != nil {
+			//rep.Steps.
+		}
+
+	}
+
+	return nil
+}
+
+func captureDashboardPanels(logger *logrus.Logger, dashboard common.GrafanaDashBoard) (map[grafana.PanelDescriptor]string, string, *report.GrafanaDashboardReport, error) {
 
 	//Stub report
 	dashReport := &report.GrafanaDashboardReport{
@@ -112,13 +142,13 @@ func recordDashboardPanels(logger *logrus.Logger, dashboard common.GrafanaDashBo
 	//check if specified dashboard exists. Get the dashboard information so it can be reused to create the snapshot
 	gdbExists, dashJson, dashErr := grafana.DashboardExists(logger, dashboard.UID, dashboard.Host, dashboard.Port, dashboard.User.Auth.Basic)
 	if failureOccurred := setDashExistsResult(logger, dashErr, dashboard, dashReport, gdbExists); failureOccurred {
-		return dashReport, dashErr
+		return nil, "", dashReport, dashErr
 	}
 
 	//Get panels to be screencaptured. Skip dashboard if no panels are to be captured
-	panelIDs, pErr := grafana.GetPanelsIDs(dashJson, dashboard.IncludePanelsIDs, dashboard.ExcludePanelsIDs)
-	if setFailedResult := setGetPanelIDsResult(logger, pErr, dashReport, panelIDs, dashboard.IncludePanelsIDs, dashboard.ExcludePanelsIDs, dashJson); setFailedResult {
-		return dashReport, dashErr
+	panelDesc, pErr := grafana.GetPanelsDescriptors(dashJson, dashboard.IncludePanelsIDs, dashboard.ExcludePanelsIDs)
+	if setFailedResult := setGetPanelIDsResult(logger, pErr, dashReport, panelDesc, dashboard.IncludePanelsIDs, dashboard.ExcludePanelsIDs, dashJson); setFailedResult {
+		return nil, "", dashReport, dashErr
 	}
 
 	//Create temporary directory to store images locally
@@ -130,37 +160,27 @@ func recordDashboardPanels(logger *logrus.Logger, dashboard common.GrafanaDashBo
 			Result: false,
 			Cause:  msg,
 		}
-		return dashReport, tErr
+		return nil, "", dashReport, tErr
 	}
 	dashReport.Steps.CreateDownloadDir = report.Result{
 		Result: true,
 	}
-	defer func() {
-		if rmErr := os.RemoveAll(tmpDir); rmErr != nil {
-			dashReport.Steps.DeleteDownloadDir = report.Result{
-				Result: false,
-				Cause:  rmErr.Error(),
-			}
-		}
-	}()
 
 	//Create snapshot, screen capture and save to temporary directory
-	images, cdErr := createAndDownloadSnapshotPanels(logger, dashReport, dashboard.Host, dashboard.Port, dashboard.User.Auth.Basic, dashJson, panelIDs, tmpDir)
+	images, cdErr := createAndDownloadSnapshotPanels(logger, dashReport, dashboard.Host, dashboard.Port, dashboard.User.Auth.Basic, dashJson, panelDesc, tmpDir)
 	if cdErr != nil {
 		//c&d method is responsible for updating the dashboard report
 		logger.Debug("An error occurred while creating and downloading the dashboard snapshot")
-		return dashReport, cdErr
+		deleteDir(logger, &dashReport.Steps.DeleteDownloadDir, tmpDir)
+		return nil, tmpDir, dashReport, cdErr
 	}
-
-	logger.Info(images)
-
-	//create page under parent page with correct file names
+	logger.Debugf("Downloaded images as <%+v>", images)
 
 	//upload all attachments with name to page
-	return dashReport, nil
+	return images, tmpDir, dashReport, nil
 }
 
-func createAndDownloadSnapshotPanels(logger *logrus.Logger, dashReport *report.GrafanaDashboardReport, host string, port int, user common.Basic, dashJson json.RawMessage, panelIDs []int, storeDir string) (map[int]string, error) {
+func createAndDownloadSnapshotPanels(logger *logrus.Logger, dashReport *report.GrafanaDashboardReport, host string, port int, user common.Basic, dashJson json.RawMessage, panelDesc []grafana.PanelDescriptor, storeDir string) (map[grafana.PanelDescriptor]string, error) {
 
 	//Opting to wrap these methods to ensure snapshot cleanup occurs
 	//create dashboard snapshot
@@ -177,7 +197,7 @@ func createAndDownloadSnapshotPanels(logger *logrus.Logger, dashReport *report.G
 	}()
 
 	//Download images for all panels
-	files, fErr := downloadPanelImages(logger, dashReport, host, port, user, gs.Key, panelIDs, storeDir)
+	files, fErr := downloadPanelImages(logger, dashReport, host, port, user, gs.Key, panelDesc, storeDir)
 	if fErr != nil {
 		return nil, fErr
 	}
@@ -185,7 +205,24 @@ func createAndDownloadSnapshotPanels(logger *logrus.Logger, dashReport *report.G
 	return files, nil
 }
 
-func downloadPanelImages(logger *logrus.Logger, dashReport *report.GrafanaDashboardReport, host string, port int, user common.Basic, snapshotKey string, panelIDs []int, storeDir string) (map[int]string, error) {
+func deleteDir(logger *logrus.Logger, rep *report.Result, imgDir string) {
+
+	logger.Debugf("Starting delete directory for <%v>", imgDir)
+
+	if rmErr := os.RemoveAll(imgDir); rmErr != nil {
+		rep = &report.Result{
+			Result: false,
+			Cause:  rmErr.Error(),
+		}
+		logger.Errorf("Delete directory operation failed for <%v> with error <%v>", imgDir, rmErr)
+	} else {
+		rep = &report.Result{
+			Result: true,
+		}
+	}
+}
+
+func downloadPanelImages(logger *logrus.Logger, dashReport *report.GrafanaDashboardReport, host string, port int, user common.Basic, snapshotKey string, panels []grafana.PanelDescriptor, storeDir string) (map[grafana.PanelDescriptor]string, error) {
 
 	//login to dashboard
 	ctxt, _ := context.WithTimeout(context.Background(), time.Minute)
@@ -205,32 +242,32 @@ func downloadPanelImages(logger *logrus.Logger, dashReport *report.GrafanaDashbo
 	}
 
 	//build url to snapshot
-	urls := buildPanelUrls(host, port, snapshotKey, panelIDs)
-	logger.Debugf("Going to start downloading images with panel urls <%+v>", urls)
+	setPanelSnapshotUrls(host, port, snapshotKey, &panels)
+	logger.Debugf("Going to start downloading images with panel urls <%+v>", panels)
 
 	//screen shot each snapshot and save to local dir
-	dashReport.Steps.PanelSnapshotDownload = make(map[int]report.Result, len(urls))
-	images := make(map[int]string, len(panelIDs))
-	for panelID, panelURL := range urls {
+	dashReport.Steps.PanelSnapshotDownload = make(map[int]report.Result, len(panels))
+	images := make(map[grafana.PanelDescriptor]string, len(panels))
+	for _, panel := range panels {
 
 		//Create file name
 		f, fErr := ioutil.TempFile(storeDir, "")
 		if fErr != nil {
-			msg := fmt.Sprintf("Unable to create temporary directory within <%v> for panel url <%v>. err <%v>", storeDir, panelURL, fErr)
+			msg := fmt.Sprintf("Unable to create temporary directory within <%v> for panel url <%v>. err <%v>", storeDir, panel.SnapshotURL, fErr)
 			logger.Error(msg)
-			dashReport.Steps.PanelSnapshotDownload[panelID] = report.Result{
+			dashReport.Steps.PanelSnapshotDownload[panel.ID] = report.Result{
 				Result: false,
 				Cause:  msg,
 			}
 			continue
 		}
-		logger.Debugf("Created temp file <%v> to store image from <%v>", f.Name(), panelURL)
+		logger.Debugf("Created temp file <%v> to store image from <%v>", f.Name(), panel.SnapshotURL)
 
 		//Download snapshot to storage directory
-		if rerr := chromedp.Run(ctx, grafana.SaveSnapshot(panelID, panelURL, f.Name())); rerr != nil {
-			msg := fmt.Sprintf("Unable to open url <%v> and download snapshot. err <%v>", panelURL, rerr)
+		if rerr := chromedp.Run(ctx, grafana.SaveSnapshot(panel, f.Name())); rerr != nil {
+			msg := fmt.Sprintf("Unable to open url <%v> and download snapshot. err <%v>", panel.SnapshotURL, rerr)
 			logger.Error(msg)
-			dashReport.Steps.PanelSnapshotDownload[panelID] = report.Result{
+			dashReport.Steps.PanelSnapshotDownload[panel.ID] = report.Result{
 				Result: false,
 				Cause:  msg,
 			}
@@ -238,8 +275,8 @@ func downloadPanelImages(logger *logrus.Logger, dashReport *report.GrafanaDashbo
 		}
 
 		//snapshot has been saved. Update report and record
-		images[panelID] = f.Name()
-		dashReport.Steps.PanelSnapshotDownload[panelID] = report.Result{
+		images[panel] = f.Name()
+		dashReport.Steps.PanelSnapshotDownload[panel.ID] = report.Result{
 			Result: true,
 		}
 	}
@@ -247,15 +284,10 @@ func downloadPanelImages(logger *logrus.Logger, dashReport *report.GrafanaDashbo
 	return images, nil
 }
 
-func buildPanelUrls(host string, port int, snapshotID string, panelIDs []int) map[int]string {
-
-	urls := make(map[int]string, len(panelIDs))
-
-	for _, id := range panelIDs {
-		urls[id] = fmt.Sprintf("http://%s:%d/dashboard/snapshot/%s?viewPanel=%d", host, port, snapshotID, id)
+func setPanelSnapshotUrls(host string, port int, snapshotID string, panelIDs *[]grafana.PanelDescriptor) {
+	for _, panel := range *panelIDs {
+		panel.SnapshotURL = fmt.Sprintf("http://%s:%d/dashboard/snapshot/%s?viewPanel=%d", host, port, snapshotID, panel.ID)
 	}
-
-	return urls
 }
 
 func setDeleteSnapshotResult(logger *logrus.Logger, err error, snapshotKey string, g *report.GrafanaDashboardReport) {
@@ -287,7 +319,7 @@ func setDashBoardSnapshotResult(logger *logrus.Logger, err error, g *report.Graf
 	return false
 }
 
-func setGetPanelIDsResult(logger *logrus.Logger, pErr error, dashReport *report.GrafanaDashboardReport, ids, includeIDs, excludeIDs []int, dashJson json.RawMessage) bool {
+func setGetPanelIDsResult(logger *logrus.Logger, pErr error, dashReport *report.GrafanaDashboardReport, ids []grafana.PanelDescriptor, includeIDs, excludeIDs []int, dashJson json.RawMessage) bool {
 
 	if pErr != nil {
 		logger.Errorf("Unable to parse grafana dashboard API response. <%v>", pErr)

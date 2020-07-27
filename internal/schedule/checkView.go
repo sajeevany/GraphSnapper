@@ -58,7 +58,7 @@ func (s DataStores) GetFields() logrus.Fields {
 type ParentConfluencePage struct {
 	SpaceKey     string
 	ParentPageID string
-	User         common.ConfluenceServerUserV1
+	User         common.Basic
 }
 
 func (p ParentConfluencePage) GetFields() logrus.Fields {

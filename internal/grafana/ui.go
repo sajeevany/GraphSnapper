@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	LoginURL = "http://%s:%d/login"
+	LoginURL         = "http://%s:%d/login"
 	PanelSelectorFmt = "#panel-%s > div > div:nth-child(1) > div > div.panel-content > div > plugin-component > panel-plugin-graph > grafana-panel > ng-transclude > div > div.graph-panel__chart > canvas.flot-overlay"
 )
 
@@ -28,11 +28,11 @@ func GetLoginTasks(url string, username, password string) chromedp.Tasks {
 	}
 }
 
-func SaveSnapshot(panelID int, url, saveAsFileURL string) chromedp.Tasks {
+func SaveSnapshot(panelID PanelDescriptor, saveAsFileURL string) chromedp.Tasks {
 	var buf []byte
-	panelSelector := fmt.Sprintf(PanelSelectorFmt, strconv.Itoa(panelID))
+	panelSelector := fmt.Sprintf(PanelSelectorFmt, strconv.Itoa(panelID.ID))
 	return chromedp.Tasks{
-		chromedp.Navigate(url),
+		chromedp.Navigate(panelID.SnapshotURL),
 		chromedp.WaitVisible(panelSelector, chromedp.BySearch),
 		chromedp.CaptureScreenshot(&buf),
 		chromedp.ActionFunc(func(context.Context) error {
