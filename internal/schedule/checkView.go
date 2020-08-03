@@ -54,10 +54,13 @@ func (s DataStores) GetFields() logrus.Fields {
 	}
 }
 
-//ParentConfluencePage defines the parent location in which pages will be created as sub-pages
+//ParentConfluencePage defines the parent location (dashboard description page) in which panel storage pages will be
+//created as sub pages
 type ParentConfluencePage struct {
 	SpaceKey     string
 	ParentPageID string
+	Host         string
+	Port         int
 	User         common.Basic
 }
 

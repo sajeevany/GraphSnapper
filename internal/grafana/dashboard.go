@@ -83,6 +83,12 @@ type PanelDescriptor struct {
 	ID          int
 }
 
+//DownloadedPanelDesc - panel descriptor that has been downloaded to a local directory
+type DownloadedPanelDesc struct {
+	PanelDescriptor
+	DownloadDir string
+}
+
 func GetPanelsDescriptors(msg json.RawMessage, includeIDs, excludeIDs []int) ([]PanelDescriptor, error) {
 
 	//Check if msg is non-zero

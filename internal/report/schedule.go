@@ -1,6 +1,7 @@
 package report
 
 import (
+	"fmt"
 	"github.com/sajeevany/graph-snapper/internal/common"
 	"net/http"
 	"time"
@@ -16,8 +17,8 @@ func (v DashboardSnapshotReport) GetResultCode() int {
 	return http.StatusOK
 }
 
-func (v DashboardSnapshotReport) ToCheckScheduleV1View() CheckV1View {
-	return CheckV1View{}
+func (v DashboardSnapshotReport) ToCheckScheduleV1View() CheckV1ReportView {
+	return CheckV1ReportView{}
 }
 
 type GrafanaDashboardReport struct {
@@ -26,7 +27,29 @@ type GrafanaDashboardReport struct {
 	EndTime   time.Time
 	UID       string
 	Request   common.GrafanaDashBoard
-	Steps     Steps
+	Steps     *Steps
+}
+
+func NewGrafanaDashboardReport(uid string) *GrafanaDashboardReport {
+	//Stub report
+	return &GrafanaDashboardReport{
+		Title:     fmt.Sprintf("Grafana dashboard <%s> snapshot panel report", uid),
+		StartTime: time.Now(),
+		UID:       uid,
+		Steps: &Steps{
+			GrafanaSnapshotSteps: &GrafanaDBSnapshotStages{
+				DashboardExistsCheck:  NewNotExecutedResult(),
+				ExtractPanelID:        NewNotExecutedResult(),
+				DashboardSnapshot:     NewNotExecutedResult(),
+				CreateDownloadDir:     NewNotExecutedResult(),
+				BasicUILogin:          NewNotExecutedResult(),
+				PanelSnapshotDownload: nil,
+				DeleteSnapshot:        NewNotExecutedResult(),
+				DeleteDownloadDir:     NewNotExecutedResult(),
+			},
+			ConfluenceStoreStages: nil,
+		},
+	}
 }
 
 func (r GrafanaDashboardReport) Finalize() {
@@ -34,16 +57,33 @@ func (r GrafanaDashboardReport) Finalize() {
 }
 
 type Steps struct {
+	GrafanaSnapshotSteps  *GrafanaDBSnapshotStages
+	ConfluenceStoreStages map[string]ConfluenceStoreStages
+}
+
+type GrafanaDBSnapshotStages struct {
 	DashboardExistsCheck  Result
 	ExtractPanelID        Result
 	DashboardSnapshot     Result
 	CreateDownloadDir     Result
 	BasicUILogin          Result
-	PanelSnapshotDownload map[int]Result
-	DataStorePageCreation Result
-	UploadSnapshots       Result
-	DeleteSnapshot        Result
-	DeleteDownloadDir     Result
+	PanelSnapshotDownload map[int]PanelDownload
+
+	//Cleanup stages
+	DeleteSnapshot    Result
+	DeleteDownloadDir Result
+}
+
+type PanelDownload struct {
+	CreateTempFile          Result
+	DownloadPanelScreenshot Result
+}
+
+type ConfluenceStoreStages struct {
+	ParentPageExistsCheck   Result
+	CreateMissingParentPage Result
+	DataStorePageCreation   Result
+	UploadSnapshots         Result
 }
 
 type Result struct {
