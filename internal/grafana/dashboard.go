@@ -21,6 +21,8 @@ const (
 //and the dashboard json description (can be used in a snapshot call)
 func DashboardExists(logger *logrus.Logger, uid, host string, port int, user common.Basic) (bool, json.RawMessage, error) {
 
+	logger.Debugf("Starting dashboard exists check for uid <%v> <%v>:<%v>", uid, host, port)
+
 	//Create request
 	requestUrl := fmt.Sprintf(GetDashboardURL, host, port, uid)
 	req, err := http.NewRequest(http.MethodGet, requestUrl, nil)
@@ -83,6 +85,19 @@ type PanelDescriptor struct {
 	ID          int
 }
 
+//PanelDescriptors - Slice of PanelsDescriptors that is sortable by ID
+type PanelDescriptors []PanelDescriptor
+
+func (s PanelDescriptors) Len() int {
+	return len(s)
+}
+func (s PanelDescriptors) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+func (s PanelDescriptors) Less(i, j int) bool {
+	return s[i].ID < s[j].ID
+}
+
 //DownloadedPanelDesc - panel descriptor that has been downloaded to a local directory
 type DownloadedPanelDesc struct {
 	PanelDescriptor
@@ -127,7 +142,7 @@ func filterPanels(panels map[int]PanelDescriptor, include, exclude []int) []Pane
 	//filter panels. Inclusion list takes priority over exclusion list
 	if len(include) > 0 {
 		//restrictive include - schedule will only ever snapshot these panels. New panels will not be included
-		var pInc []PanelDescriptor
+		pInc := make([]PanelDescriptor,0)
 		for _, v := range include {
 			//If a value exists in the inclusion slice then add it to included panels slice
 			if panelSnap, exists := panels[v]; exists {
@@ -160,8 +175,10 @@ func mapToSlice(panels map[int]PanelDescriptor) []PanelDescriptor {
 	//Create slice to return
 	slc := make([]PanelDescriptor, len(panels))
 
-	for index, panel := range panels {
-		slc[index] = panel
+	i := 0
+	for _, panel := range panels {
+		slc[i] = panel
+		i++
 	}
 	return slc
 }

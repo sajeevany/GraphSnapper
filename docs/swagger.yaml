@@ -180,7 +180,104 @@ definitions:
         $ref: '#/definitions/record.MetadataViewV1'
         type: object
     type: object
-  report.CheckV1View:
+  report.CheckV1ReportView:
+    properties:
+      duration:
+        type: string
+      endTime:
+        type: string
+      grafanaDBReports:
+        additionalProperties:
+          $ref: '#/definitions/report.GrafanaDashboardReportView'
+        type: object
+      startTime:
+        type: string
+      title:
+        type: string
+    type: object
+  report.ConfluenceStoreStagesView:
+    properties:
+      createMissingParentPage:
+        $ref: '#/definitions/report.Result'
+        type: object
+      dataStorePageCreation:
+        $ref: '#/definitions/report.Result'
+        type: object
+      parentPageExistsCheck:
+        $ref: '#/definitions/report.Result'
+        type: object
+      uploadSnapshots:
+        $ref: '#/definitions/report.Result'
+        type: object
+    type: object
+  report.GrafanaDashboardReportView:
+    properties:
+      endTime:
+        type: string
+      stages:
+        $ref: '#/definitions/report.GrafanaStagesView'
+        type: object
+      startTime:
+        type: string
+      title:
+        type: string
+      uid:
+        type: string
+    type: object
+  report.GrafanaSnapshotStagesView:
+    properties:
+      basicUILogin:
+        $ref: '#/definitions/report.Result'
+        type: object
+      createDownloadDir:
+        $ref: '#/definitions/report.Result'
+        type: object
+      dashboardExistsCheck:
+        $ref: '#/definitions/report.Result'
+        type: object
+      dashboardSnapshot:
+        $ref: '#/definitions/report.Result'
+        type: object
+      deleteDownloadDir:
+        $ref: '#/definitions/report.Result'
+        type: object
+      deleteSnapshot:
+        $ref: '#/definitions/report.Result'
+        description: Cleanup stages
+        type: object
+      extractPanelID:
+        $ref: '#/definitions/report.Result'
+        type: object
+      panelSnapshotDownload:
+        additionalProperties:
+          $ref: '#/definitions/report.PanelDownloadView'
+        type: object
+    type: object
+  report.GrafanaStagesView:
+    properties:
+      confluenceStoreStages:
+        additionalProperties:
+          $ref: '#/definitions/report.ConfluenceStoreStagesView'
+        type: object
+      grafanaSnapshotStages:
+        $ref: '#/definitions/report.GrafanaSnapshotStagesView'
+        type: object
+    type: object
+  report.PanelDownloadView:
+    properties:
+      createTempFile:
+        $ref: '#/definitions/report.Result'
+        type: object
+      downloadPanelScreenshot:
+        $ref: '#/definitions/report.Result'
+        type: object
+    type: object
+  report.Result:
+    properties:
+      cause:
+        type: string
+      result:
+        type: boolean
     type: object
   schedule.CheckScheduleV1:
     properties:
@@ -207,12 +304,16 @@ definitions:
     type: object
   schedule.ParentConfluencePage:
     properties:
+      host:
+        type: string
       parentPageID:
         type: string
+      port:
+        type: integer
       spaceKey:
         type: string
       user:
-        $ref: '#/definitions/common.ConfluenceServerUserV1'
+        $ref: '#/definitions/common.Basic'
         type: object
     type: object
 info:
@@ -335,7 +436,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/report.CheckV1View'
+            $ref: '#/definitions/report.CheckV1ReportView'
       summary: Check and execute schedule
       tags:
       - schedule

@@ -183,7 +183,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/report.CheckV1View"
+                            "$ref": "#/definitions/report.CheckV1ReportView"
                         }
                     }
                 }
@@ -462,8 +462,149 @@
                 }
             }
         },
-        "report.CheckV1View": {
-            "type": "object"
+        "report.CheckV1ReportView": {
+            "type": "object",
+            "properties": {
+                "duration": {
+                    "type": "string"
+                },
+                "endTime": {
+                    "type": "string"
+                },
+                "grafanaDBReports": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/report.GrafanaDashboardReportView"
+                    }
+                },
+                "startTime": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "report.ConfluenceStoreStagesView": {
+            "type": "object",
+            "properties": {
+                "createMissingParentPage": {
+                    "type": "object",
+                    "$ref": "#/definitions/report.Result"
+                },
+                "dataStorePageCreation": {
+                    "type": "object",
+                    "$ref": "#/definitions/report.Result"
+                },
+                "parentPageExistsCheck": {
+                    "type": "object",
+                    "$ref": "#/definitions/report.Result"
+                },
+                "uploadSnapshots": {
+                    "type": "object",
+                    "$ref": "#/definitions/report.Result"
+                }
+            }
+        },
+        "report.GrafanaDashboardReportView": {
+            "type": "object",
+            "properties": {
+                "endTime": {
+                    "type": "string"
+                },
+                "stages": {
+                    "type": "object",
+                    "$ref": "#/definitions/report.GrafanaStagesView"
+                },
+                "startTime": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "uid": {
+                    "type": "string"
+                }
+            }
+        },
+        "report.GrafanaSnapshotStagesView": {
+            "type": "object",
+            "properties": {
+                "basicUILogin": {
+                    "type": "object",
+                    "$ref": "#/definitions/report.Result"
+                },
+                "createDownloadDir": {
+                    "type": "object",
+                    "$ref": "#/definitions/report.Result"
+                },
+                "dashboardExistsCheck": {
+                    "type": "object",
+                    "$ref": "#/definitions/report.Result"
+                },
+                "dashboardSnapshot": {
+                    "type": "object",
+                    "$ref": "#/definitions/report.Result"
+                },
+                "deleteDownloadDir": {
+                    "type": "object",
+                    "$ref": "#/definitions/report.Result"
+                },
+                "deleteSnapshot": {
+                    "description": "Cleanup stages",
+                    "type": "object",
+                    "$ref": "#/definitions/report.Result"
+                },
+                "extractPanelID": {
+                    "type": "object",
+                    "$ref": "#/definitions/report.Result"
+                },
+                "panelSnapshotDownload": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/report.PanelDownloadView"
+                    }
+                }
+            }
+        },
+        "report.GrafanaStagesView": {
+            "type": "object",
+            "properties": {
+                "confluenceStoreStages": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/report.ConfluenceStoreStagesView"
+                    }
+                },
+                "grafanaSnapshotStages": {
+                    "type": "object",
+                    "$ref": "#/definitions/report.GrafanaSnapshotStagesView"
+                }
+            }
+        },
+        "report.PanelDownloadView": {
+            "type": "object",
+            "properties": {
+                "createTempFile": {
+                    "type": "object",
+                    "$ref": "#/definitions/report.Result"
+                },
+                "downloadPanelScreenshot": {
+                    "type": "object",
+                    "$ref": "#/definitions/report.Result"
+                }
+            }
+        },
+        "report.Result": {
+            "type": "object",
+            "properties": {
+                "cause": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "boolean"
+                }
+            }
         },
         "schedule.CheckScheduleV1": {
             "type": "object",
@@ -503,15 +644,21 @@
         "schedule.ParentConfluencePage": {
             "type": "object",
             "properties": {
+                "host": {
+                    "type": "string"
+                },
                 "parentPageID": {
                     "type": "string"
+                },
+                "port": {
+                    "type": "integer"
                 },
                 "spaceKey": {
                     "type": "string"
                 },
                 "user": {
                     "type": "object",
-                    "$ref": "#/definitions/common.ConfluenceServerUserV1"
+                    "$ref": "#/definitions/common.Basic"
                 }
             }
         }

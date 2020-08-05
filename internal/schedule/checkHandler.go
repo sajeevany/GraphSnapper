@@ -26,7 +26,7 @@ const (
 //@Description Non-authenticated endpoint which checks and runs a schedule to validate connectivity and storage behaviour by the end user
 //@Produce json
 //@Param schedule body CheckScheduleV1 true "Check schedule"
-//@Success 200 {object} report.CheckV1View
+//@Success 200 {object} report.CheckV1ReportView
 //@Fail 400 {object} gin.H
 //@Fail 500 {object} gin.H
 //@Router /schedule/check [post]
@@ -67,22 +67,25 @@ func executeSchedule(logger *logrus.Logger, schedule CheckScheduleV1) (report.Da
 
 	snapReport := report.DashboardSnapshotReport{
 		Title:            "CheckV1 schedule test",
-		Timestamp:        time.Now(),
+		StartTime:        time.Now(),
 		GrafanaDBReports: make(map[string]*report.GrafanaDashboardReport, len(schedule.GraphDashboards.Grafana)),
 	}
+	defer snapReport.Finalize()
 
 	//create snapshots, group, and upload as a subpage to the specified datastore(s)
 	for reqKey, dashboard := range schedule.GraphDashboards.Grafana {
 		//wrapping and calling function to ensure defer is run per loop. TODO make this easier to read by moving it inside record function
-		func(){
+		func() {
 			report := report.NewGrafanaDashboardReport(dashboard.UID)
 			defer report.Finalize()
 			snapReport.GrafanaDBReports[reqKey] = report
-			if recErr := recordGrafanaDashboard(logger, dashboard, schedule.DataStores, report); recErr!= nil{
-				logger.Error("Failed to record grafana dashboard with uid <%v>. error <%v>", dashboard.UID, recErr)
+			if recErr := recordGrafanaDashboard(logger, dashboard, schedule.DataStores, report); recErr != nil {
+				logger.Errorf("Failed to record grafana dashboard with uid <%v>. error <%v>", dashboard.UID, recErr)
 			}
 		}()
 	}
+
+	fmt.Printf("returning report <%v>", snapReport)
 
 	return snapReport, nil
 }
@@ -94,27 +97,27 @@ func recordGrafanaDashboard(logger *logrus.Logger, dashboard common.GrafanaDashB
 	tmpDir, tErr := ioutil.TempDir(os.TempDir(), fmt.Sprintf("schedule-test-%s", dashboard.UID))
 	if tErr != nil {
 		msg := fmt.Sprintf("Failed to create temporary directory to store downloaded images <%v>", tErr)
-		dashboardReport.Steps.GrafanaSnapshotSteps.CreateDownloadDir = report.Result{
+		dashboardReport.Stages.GrafanaSnapshotStages.CreateDownloadDir = report.Result{
 			Result: false,
 			Cause:  msg,
 		}
 		logger.Error(msg)
 		return tErr
 	}
-	dashboardReport.Steps.GrafanaSnapshotSteps.CreateDownloadDir = report.Result{
+	dashboardReport.Stages.GrafanaSnapshotStages.CreateDownloadDir = report.Result{
 		Result: true,
 	}
-	defer deleteDir(logger, &dashboardReport.Steps.GrafanaSnapshotSteps.DeleteDownloadDir, tmpDir)
+	defer deleteDir(logger, &dashboardReport.Stages.GrafanaSnapshotStages.DeleteDownloadDir, tmpDir)
 
 	//Create snapshto and download screenshots of requested panels
-	images, err := captureDashboardPanels(logger, dashboardReport.Steps.GrafanaSnapshotSteps, dashboard, tmpDir)
+	images, err := captureDashboardPanels(logger, dashboardReport.Stages.GrafanaSnapshotStages, dashboard, tmpDir)
 	if err != nil {
 		logger.Errorf("Failed to perform captureDashboardPanels action for dash board <%v>. err <%v>", dashboard, err)
 		return err
 	}
 
 	//Create/update datastore page and upload images
-	uErr := setupDatastoreAndUpload(logger, dashboardReport.Steps.ConfluenceStoreStages, datastores, images)
+	uErr := setupDatastoreAndUpload(logger, dashboardReport.Stages.ConfluenceStoreStages, datastores, images)
 	if uErr != nil {
 		logger.Errorf("Failed to upload images to specified datastores <%+v>. err <%v>", datastores, uErr)
 		return uErr
@@ -130,14 +133,14 @@ func setupDatastoreAndUpload(logger *logrus.Logger, rep map[string]report.Conflu
 	rep = make(map[string]report.ConfluenceStoreStages, len(stores.ConfluencePages))
 	for _, parent := range stores.ConfluencePages {
 
-		reprt := report.ConfluenceStoreStages{}
+		reprt := report.NewConfluenceStoreStages()
 		rep[parent.ParentPageID] = reprt
 
 		//Check if the parent confluence page exists. If not create it
 		exists, eErr := confluence.DoesPageExistByID(logger, parent.ParentPageID, parent.Host, parent.Port, common.Auth{
-			Basic:       parent.User,
+			Basic: parent.User,
 		})
-		if failed := setParentCheckResult(logger, eErr, parent, &reprt, exists); failed{
+		if failed := setParentCheckResult(logger, eErr, parent, &reprt.ParentPageExistsCheck, exists); failed {
 			continue
 		}
 
@@ -148,7 +151,7 @@ func setupDatastoreAndUpload(logger *logrus.Logger, rep map[string]report.Conflu
 		////Create page
 		//pageID, pErr := confluence.CreatePage(logger, pageName, parent.SpaceKey, parent.ParentPageID, parent.User, images)
 		//if pErr != nil {
-		//	//rep.Steps.
+		//	//rep.Stages.
 		//}
 
 		//
@@ -159,19 +162,19 @@ func setupDatastoreAndUpload(logger *logrus.Logger, rep map[string]report.Conflu
 }
 
 //setParentCheckResult - sets result of parent exists check. Returns true if an error occurred or the parent page doesn't exist. Use to continue/skip any further operations.
-func setParentCheckResult(logger *logrus.Logger, eErr error, parent ParentConfluencePage, rep *report.ConfluenceStoreStages, exists bool) bool{
+func setParentCheckResult(logger *logrus.Logger, eErr error, parent ParentConfluencePage, pExistsResult *report.Result, exists bool) bool {
 
 	if eErr != nil {
 		msg := fmt.Sprintf("Error checking if confluence page with source id <%v> does not exist. <%v>", parent.ParentPageID, eErr.Error())
 		logger.Errorf(msg)
-		rep.ParentPageExistsCheck = report.Result{
+		pExistsResult = &report.Result{
 			Result: false,
 			Cause:  msg,
 		}
 		return true
 	}
 	if !exists {
-		rep.ParentPageExistsCheck = report.Result{
+		pExistsResult = &report.Result{
 			Result: false,
 			Cause:  "Page does not exist",
 		}
@@ -180,7 +183,7 @@ func setParentCheckResult(logger *logrus.Logger, eErr error, parent ParentConflu
 		return true
 	}
 
-	rep.ParentPageExistsCheck = report.Result{
+	pExistsResult = &report.Result{
 		Result: true,
 	}
 
@@ -206,7 +209,7 @@ func captureDashboardPanels(logger *logrus.Logger, dashboardStages *report.Grafa
 	images, cdErr := createAndDownloadSnapshotPanels(logger, dashboardStages, dashboard.Host, dashboard.Port, dashboard.User.Auth.Basic, dashboard.UID, dashJson, panelDesc, downloadDir)
 	if cdErr != nil {
 		//c&d method is responsible for updating the dashboard report
-		logger.Debug("An error occurred while creating and downloading the dashboard snapshot <%v>", cdErr)
+		logger.Debugf("An error occurred while creating and downloading the dashboard snapshot <%v>", cdErr)
 		return nil, cdErr
 	}
 	logger.Debugf("Downloaded images as <%+v>", images)
@@ -320,7 +323,7 @@ func downloadPanelImages(logger *logrus.Logger, snapshotStages *report.GrafanaDB
 		//snapshot has been saved. Update report and record
 		images[idx] = grafana.DownloadedPanelDesc{
 			PanelDescriptor: panel,
-			DownloadDir: f.Name(),
+			DownloadDir:     f.Name(),
 		}
 		res.DownloadPanelScreenshot.Result = true
 	}
