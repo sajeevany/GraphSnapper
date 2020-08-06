@@ -100,17 +100,17 @@ func Test_filterPanels(t *testing.T) {
 				include: []int{1, 2, 3},
 				exclude: nil,
 			},
-			want: func()[]PanelDescriptor{
+			want: func() []PanelDescriptor {
 				m := make([]PanelDescriptor, 3)
 				m[0] = PanelDescriptor{
 					Title: "Panel1 Title",
 					ID:    1,
 				}
-				m[1]= PanelDescriptor{
+				m[1] = PanelDescriptor{
 					Title: "Panel2 Title",
 					ID:    2,
 				}
-				m[2]= PanelDescriptor{
+				m[2] = PanelDescriptor{
 					Title: "Panel3 Title",
 					ID:    3,
 				}
@@ -145,13 +145,13 @@ func Test_filterPanels(t *testing.T) {
 				include: nil,
 				exclude: []int{1, 2, 3},
 			},
-			want: func()[]PanelDescriptor{
+			want: func() []PanelDescriptor {
 				m := make([]PanelDescriptor, 2)
 				m[0] = PanelDescriptor{
 					Title: "Panel0 Title",
 					ID:    0,
 				}
-				m[1]= PanelDescriptor{
+				m[1] = PanelDescriptor{
 					Title: "Panel4 Title",
 					ID:    4,
 				}
@@ -190,17 +190,17 @@ func Test_filterPanels(t *testing.T) {
 				include: []int{1, 2, 3},
 				exclude: []int{1, 2, 3},
 			},
-			want: func()[]PanelDescriptor{
+			want: func() []PanelDescriptor {
 				m := make([]PanelDescriptor, 3)
 				m[0] = PanelDescriptor{
 					Title: "Panel1 Title",
 					ID:    1,
 				}
-				m[1]= PanelDescriptor{
+				m[1] = PanelDescriptor{
 					Title: "Panel2 Title",
 					ID:    2,
 				}
-				m[2]= PanelDescriptor{
+				m[2] = PanelDescriptor{
 					Title: "Panel3 Title",
 					ID:    3,
 				}

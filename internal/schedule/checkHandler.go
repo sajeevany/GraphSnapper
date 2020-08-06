@@ -20,6 +20,8 @@ import (
 const (
 	Group         = "/schedule"
 	CheckEndpoint = "/check"
+
+	SnapshotURLFmt = "http://%s:%d/dashboard/snapshot/%s?viewPanel=%d"
 )
 
 //@Summary Check and execute schedule
@@ -51,7 +53,7 @@ func CheckV1(logger *logrus.Logger) gin.HandlerFunc {
 			return
 		}
 
-		//Run snapshot and upload process
+		//Run snapshot and upload processes
 		report, err := executeSchedule(logger, schedule)
 		if err != nil {
 			logger.WithFields(schedule.GetFields()).Errorf("Error when running executeSchedule err <%v>", err)
@@ -167,25 +169,22 @@ func setParentCheckResult(logger *logrus.Logger, eErr error, parent ParentConflu
 	if eErr != nil {
 		msg := fmt.Sprintf("Error checking if confluence page with source id <%v> does not exist. <%v>", parent.ParentPageID, eErr.Error())
 		logger.Errorf(msg)
-		pExistsResult = &report.Result{
-			Result: false,
-			Cause:  msg,
-		}
+		pExistsResult.Result = false
+		pExistsResult.Cause = msg
+
 		return true
 	}
 	if !exists {
-		pExistsResult = &report.Result{
-			Result: false,
-			Cause:  "Page does not exist",
-		}
+		pExistsResult.Result = false
+		pExistsResult.Cause = "Page does not exist"
 		logger.Debugf("Page <%v> does not exist", parent.ParentPageID)
 
 		return true
 	}
 
-	pExistsResult = &report.Result{
-		Result: true,
-	}
+	//Set passed result
+	pExistsResult.Result = true
+	pExistsResult.Cause = ""
 
 	return false
 }
@@ -200,7 +199,7 @@ func captureDashboardPanels(logger *logrus.Logger, dashboardStages *report.Grafa
 	}
 
 	//Get panels to be screencaptured. Skip dashboard if no panels are to be captured
-	panelDesc, pErr := grafana.GetPanelsDescriptors(dashJson, dashboard.IncludePanelsIDs, dashboard.ExcludePanelsIDs)
+	panelDesc, pErr := grafana.GetPanelsDescriptors(logger, dashJson, dashboard.IncludePanelsIDs, dashboard.ExcludePanelsIDs)
 	if setFailedResult := setGetPanelIDsResult(logger, pErr, &dashboardStages.ExtractPanelID, panelDesc, dashboard.IncludePanelsIDs, dashboard.ExcludePanelsIDs, dashJson); setFailedResult {
 		return nil, dashErr
 	}
@@ -249,19 +248,19 @@ func deleteDir(logger *logrus.Logger, rep *report.Result, imgDir string) {
 	logger.Debugf("Starting delete directory for <%v>", imgDir)
 
 	if rmErr := os.RemoveAll(imgDir); rmErr != nil {
-		rep = &report.Result{
-			Result: false,
-			Cause:  rmErr.Error(),
-		}
+		rep.Result = false
+		rep.Cause = rmErr.Error()
 		logger.Errorf("Delete directory operation failed for <%v> with error <%v>", imgDir, rmErr)
 	} else {
-		rep = &report.Result{
-			Result: true,
-		}
+		rep.Result = true
+		rep.Cause = ""
 	}
 }
 
 func downloadPanelImages(logger *logrus.Logger, snapshotStages *report.GrafanaDBSnapshotStages, host string, port int, user common.Basic, snapshotKey string, panels []grafana.PanelDescriptor, storeDir string) ([]grafana.DownloadedPanelDesc, error) {
+
+	logger.Debug("Started downloadPanelImages()")
+	defer logger.Debug("Completed downloadPanelImages()")
 
 	//login to dashboard
 	ctxt, _ := context.WithTimeout(context.Background(), time.Minute)
@@ -278,77 +277,110 @@ func downloadPanelImages(logger *logrus.Logger, snapshotStages *report.GrafanaDB
 			Cause:  msg,
 		}
 		return nil, err
+	} else {
+		snapshotStages.BasicUILogin = report.Result{
+			Result: true,
+			Cause:  "",
+		}
 	}
 
 	//build url to snapshot
-	setPanelSnapshotUrls(host, port, snapshotKey, &panels)
+	panels = setPanelSnapshotUrls(host, port, snapshotKey, panels)
 	logger.Debugf("Going to start downloading images with panel urls <%+v>", panels)
 
 	//screen shot each snapshot and save to local dir
-	snapshotStages.PanelSnapshotDownload = make(map[int]report.PanelDownload, len(panels))
+	snapshotStages.PanelSnapshotDownload = make(map[int]*report.PanelDownload, len(panels))
 	images := make([]grafana.DownloadedPanelDesc, len(panels))
 	for idx, panel := range panels {
 
-		res := report.PanelDownload{}
-		snapshotStages.PanelSnapshotDownload[panel.ID] = res
+		panelDownloadResult := &report.PanelDownload{}
+		snapshotStages.PanelSnapshotDownload[panel.ID] = panelDownloadResult
 
-		//Create file name
-		f, fErr := ioutil.TempFile(storeDir, "")
-		if fErr != nil {
-			msg := fmt.Sprintf("Unable to create temporary directory within <%v> for panel url <%v>. err <%v>", storeDir, panel.SnapshotURL, fErr)
-			logger.Error(msg)
-			res.CreateTempFile = report.Result{
-				Result: false,
-				Cause:  msg,
-			}
-			continue
-		}
-		//Temp file created. Updated result
-		res.CreateTempFile = report.Result{
-			Result: true,
-		}
-		logger.Debugf("Created temp file <%v> to store image from <%v>", f.Name(), panel.SnapshotURL)
-
-		//Download snapshot to storage directory
-		if rerr := chromedp.Run(ctx, grafana.SaveSnapshot(panel, f.Name())); rerr != nil {
-			msg := fmt.Sprintf("Unable to open url <%v> and download snapshot. err <%v>", panel.SnapshotURL, rerr)
-			logger.Error(msg)
-			res.DownloadPanelScreenshot = report.Result{
-				Result: false,
-				Cause:  msg,
-			}
+		//Create temp file and download panel to it
+		fName, pErr := downloadToTempFile(logger, panelDownloadResult, ctx, panel, storeDir)
+		if pErr != nil {
+			logger.Debug("Error detected when downloading panel <%v> to temporary directory. err <%v>", panel, pErr)
 			continue
 		}
 
-		//snapshot has been saved. Update report and record
+		//Update slice of downloaded panel images to be referenced for upload later
 		images[idx] = grafana.DownloadedPanelDesc{
 			PanelDescriptor: panel,
-			DownloadDir:     f.Name(),
+			DownloadDir:     fName,
 		}
-		res.DownloadPanelScreenshot.Result = true
+
 	}
 
 	return images, nil
 }
 
-func setPanelSnapshotUrls(host string, port int, snapshotID string, panelIDs *[]grafana.PanelDescriptor) {
-	for _, panel := range *panelIDs {
-		panel.SnapshotURL = fmt.Sprintf("http://%s:%d/dashboard/snapshot/%s?viewPanel=%d", host, port, snapshotID, panel.ID)
+func downloadToTempFile(logger *logrus.Logger, result *report.PanelDownload, ctx context.Context, panel grafana.PanelDescriptor, dir string) (string, error) {
+	//Create file name
+	f, fErr := ioutil.TempFile(dir, "")
+	if setCreateTempFileResult(logger, fErr, dir, panel, &result.CreateTempFile, f) {
+		return "", fErr
 	}
+
+	//Download snapshot to storage directory
+	rErr := chromedp.Run(ctx, grafana.SaveSnapshot(panel, f.Name()))
+	if errDetected := setSaveSnapshotResult(logger, rErr, &result.DownloadPanelScreenshot, panel.SnapshotURL); errDetected {
+		return "", rErr
+	}
+
+	return f.Name(), nil
+}
+
+//Updates result if an error exists. Returns true if error is non-nil
+func setSaveSnapshotResult(logger *logrus.Logger, err error, r *report.Result, snapshotURL string) bool {
+	if err != nil {
+		msg := fmt.Sprintf("Unable to open url <%v> and download snapshot. err <%v>", snapshotURL, err)
+		logger.Error(msg)
+		r.Result = false
+		r.Cause = msg
+
+		return true
+	} else {
+		r.Result = true
+		r.Cause = ""
+
+		return false
+	}
+}
+
+func setCreateTempFileResult(logger *logrus.Logger, fErr error, storeDir string, panel grafana.PanelDescriptor, res *report.Result, f *os.File) bool {
+	if fErr != nil {
+		msg := fmt.Sprintf("Unable to create temporary directory within <%v> for panel url <%v>. err <%v>", storeDir, panel.SnapshotURL, fErr)
+		logger.Error(msg)
+		res.Result = false
+		res.Cause = msg
+
+		return true
+	} else {
+		//Temp file created. Updated result
+		res.Result = true
+		res.Cause = ""
+		logger.Debugf("Created temp file <%v> to store image from <%v>", f.Name(), panel.SnapshotURL)
+
+		return false
+	}
+}
+
+func setPanelSnapshotUrls(host string, port int, snapshotID string, panelIDs []grafana.PanelDescriptor) []grafana.PanelDescriptor {
+	for idx, panel := range panelIDs {
+		panelIDs[idx].SnapshotURL = fmt.Sprintf(SnapshotURLFmt, host, port, snapshotID, panel.ID)
+	}
+	return panelIDs
 }
 
 func setDeleteSnapshotResult(logger *logrus.Logger, err error, snapshotKey string, deleteSnapshotResult *report.Result) {
 	if err != nil {
 		msg := fmt.Sprintf("Failed to delete snapshot with key <%v>. Error <%v>", snapshotKey, err)
 		logger.Error(msg)
-		deleteSnapshotResult = &report.Result{
-			Result: false,
-			Cause:  "msg",
-		}
+		deleteSnapshotResult.Result = false
+		deleteSnapshotResult.Cause = msg
 	} else {
-		deleteSnapshotResult = &report.Result{
-			Result: true,
-		}
+		deleteSnapshotResult.Result = true
+		deleteSnapshotResult.Cause = ""
 	}
 }
 
@@ -356,13 +388,14 @@ func setDashBoardSnapshotResult(logger *logrus.Logger, err error, dashboardUID s
 
 	if err != nil {
 		logger.Errorf("Unable to create snapshot for dashboard <%v>. err <%v>", dashboardUID, err)
-		snapshotResult = &report.Result{
-			Result: false,
-			Cause:  err.Error(),
-		}
+		snapshotResult.Result = false
+		snapshotResult.Cause = err.Error()
+
 		return true
 	}
 
+	snapshotResult.Result = true
+	snapshotResult.Cause = ""
 	return false
 }
 
@@ -370,10 +403,9 @@ func setGetPanelIDsResult(logger *logrus.Logger, pErr error, extractPanelIDResul
 
 	if pErr != nil {
 		logger.Errorf("Unable to parse grafana dashboard API response. <%v>", pErr)
-		extractPanelIDResult = &report.Result{
-			Result: false,
-			Cause:  pErr.Error(),
-		}
+		extractPanelIDResult.Result = false
+		extractPanelIDResult.Cause = pErr.Error()
+
 		return true
 	}
 
@@ -381,39 +413,38 @@ func setGetPanelIDsResult(logger *logrus.Logger, pErr error, extractPanelIDResul
 		//No panels left to be recorded
 		msg := fmt.Sprintf("No panels ids remaining after applying inclusion <%v> and exclusion <%v> lists to dashboard result <%v>", includeIDs, excludeIDs, dashJson)
 		logger.Info(msg)
-		extractPanelIDResult = &report.Result{
-			Result: false,
-			Cause:  msg,
-		}
+		extractPanelIDResult.Result = false
+		extractPanelIDResult.Cause = msg
+
 		return true
 	}
 
-	extractPanelIDResult = &report.Result{
-		Result: true,
-	}
+	//Set postitive result
+	extractPanelIDResult.Result = true
+	extractPanelIDResult.Cause = ""
+
 	return false
 }
 
+//setDashExistsResult - returns true if an error or negative result was detected
 func setDashExistsResult(logger *logrus.Logger, dashErr error, dashboard common.GrafanaDashBoard, existsResult *report.Result, gdbExists bool) bool {
 	if dashErr != nil {
 		logger.Errorf("Internal error <%v> when checking if dashboard <%v> exists at host <%v> port <%v>", dashErr, dashboard.UID, dashboard.Host, dashboard.Port)
-		existsResult = &report.Result{
-			Result: false,
-			Cause:  dashErr.Error(),
-		}
+		existsResult.Result = false
+		existsResult.Cause = dashErr.Error()
 		return true
 	}
 	if !gdbExists {
 		msg := fmt.Sprintf("Dashboard <%v> does not exist at host <%v> port <%v>", dashboard.UID, dashboard.Host, dashboard.Port)
 		logger.Debug(msg)
-		existsResult = &report.Result{
-			Result: false,
-			Cause:  msg,
-		}
+		existsResult.Result = false
+		existsResult.Cause = msg
 		return true
 	}
-	existsResult = &report.Result{
-		Result: true,
-	}
+
+	//Set positive result
+	existsResult.Result = true
+	existsResult.Cause = ""
+
 	return false
 }

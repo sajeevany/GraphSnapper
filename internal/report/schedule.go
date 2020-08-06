@@ -79,7 +79,7 @@ func NewGrafanaDashboardReport(uid string) *GrafanaDashboardReport {
 	}
 }
 
-func (r GrafanaDashboardReport) Finalize() {
+func (r *GrafanaDashboardReport) Finalize() {
 	r.EndTime = time.Now()
 }
 
@@ -109,7 +109,7 @@ type GrafanaDBSnapshotStages struct {
 	DashboardSnapshot     Result
 	CreateDownloadDir     Result
 	BasicUILogin          Result
-	PanelSnapshotDownload map[int]PanelDownload
+	PanelSnapshotDownload map[int]*PanelDownload
 
 	//Cleanup stages
 	DeleteSnapshot    Result
@@ -134,7 +134,7 @@ type PanelDownload struct {
 	DownloadPanelScreenshot Result
 }
 
-func ToPanelDownloadViewMap(pd map[int]PanelDownload) map[int]PanelDownloadView {
+func ToPanelDownloadViewMap(pd map[int]*PanelDownload) map[int]PanelDownloadView {
 	m := make(map[int]PanelDownloadView, len(pd))
 	for i, v := range pd {
 		m[i] = v.ToPanelDownloadView()

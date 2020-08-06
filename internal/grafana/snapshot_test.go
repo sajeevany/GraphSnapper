@@ -136,11 +136,11 @@ func TestGetSnapshotsResponse_GetSnapshot(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			snapExists, snapshot := tt.gsr.GetSnapshot(tt.snapshotId)
 			if snapExists != tt.expectSnapshotToExist {
-				t.Errorf("GetSnapshot() exists check snapExists = %v, expirationInSeconds %v", snapExists, tt.expectSnapshotToExist)
+				t.Errorf("GetSnapshot() exists check snapExists = %v, expectedSnapshotToExist %v", snapExists, tt.expectSnapshotToExist)
 			}
 			if !tt.expectSnapshotToExist {
 				if !reflect.DeepEqual(snapshot, tt.expectedSnapshot) {
-					t.Errorf("GetSnapshot() snapshot = %v, expirationInSeconds %v", snapshot, tt.expectedSnapshot)
+					t.Errorf("GetSnapshot() snapshot = %v, expectedSnapshot %v", snapshot, tt.expectedSnapshot)
 				}
 			}
 		})

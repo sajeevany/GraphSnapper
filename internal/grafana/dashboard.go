@@ -34,7 +34,7 @@ func DashboardExists(logger *logrus.Logger, uid, host string, port int, user com
 
 	//create client with timeout
 	client := &http.Client{
-		Timeout: 150 * time.Millisecond,
+		Timeout: 1500 * time.Millisecond,
 	}
 
 	//Send request
@@ -65,6 +65,7 @@ func DashboardExists(logger *logrus.Logger, uid, host string, port int, user com
 		return false, nil, uErr
 	}
 
+	logger.Debugf("Completed dashboard exists check for uid <%v> <%v>:<%v>. Returning <%v>, <%+v>", uid, host, port, true, string(dash[dashboardKey]))
 	return true, dash[dashboardKey], nil
 }
 
@@ -104,7 +105,10 @@ type DownloadedPanelDesc struct {
 	DownloadDir string
 }
 
-func GetPanelsDescriptors(msg json.RawMessage, includeIDs, excludeIDs []int) ([]PanelDescriptor, error) {
+func GetPanelsDescriptors(logger *logrus.Logger, msg json.RawMessage, includeIDs, excludeIDs []int) ([]PanelDescriptor, error) {
+
+	logger.Debug("Starting GetPanelsDescriptors() and filtering based on inclusion/exclusion filters")
+	defer logger.Debug("Completed GetPanelsDescriptors()")
 
 	//Check if msg is non-zero
 	if msg == nil || len(msg) == 0 {
@@ -142,7 +146,7 @@ func filterPanels(panels map[int]PanelDescriptor, include, exclude []int) []Pane
 	//filter panels. Inclusion list takes priority over exclusion list
 	if len(include) > 0 {
 		//restrictive include - schedule will only ever snapshot these panels. New panels will not be included
-		pInc := make([]PanelDescriptor,0)
+		pInc := make([]PanelDescriptor, 0)
 		for _, v := range include {
 			//If a value exists in the inclusion slice then add it to included panels slice
 			if panelSnap, exists := panels[v]; exists {
