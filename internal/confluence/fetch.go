@@ -5,6 +5,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func DoesPageExistByID(logger *logrus.Logger, pageUID, host string, port int, user common.Auth) (bool, error) {
+func PageExistsByID(logger *logrus.Logger, pageUID, host string, port int, user common.Auth) (bool, error) {
 	return true, nil
 }

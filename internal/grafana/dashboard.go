@@ -186,3 +186,16 @@ func mapToSlice(panels map[int]PanelDescriptor) []PanelDescriptor {
 	}
 	return slc
 }
+
+//ExtractDashboardTitleFromGetDBReq - Extracts and returns the grafana dashboard title from a raw json descrition of the
+//dashboard that's returned from the GET /api/dashboards/uid/:uid call
+func ExtractDashboardTitleFromGetDBReq(msg json.RawMessage) (string, error) {
+
+	type dashboardMsg struct {
+		Title string `json:"title"` //Only extrace
+	}
+	var dash dashboardMsg
+	err := json.Unmarshal(msg, &dash)
+
+	return dash.Title, err
+}

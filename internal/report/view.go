@@ -45,5 +45,13 @@ type ConfluenceStoreStagesView struct {
 	ParentPageExistsCheck   Result
 	CreateMissingParentPage Result
 	DataStorePageCreation   Result
-	UploadSnapshots         Result
+	SnapshotUploads         map[string]SnapshotUploadView
+}
+
+type SnapshotUploadView struct {
+	PanelPageExistsCheck    Result
+	GetCurrentAttachmentIDs Result
+	UploadImageToPage       Result
+	GetPageContents         Result
+	UpdatePageContents      Result
 }

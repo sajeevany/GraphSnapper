@@ -150,27 +150,51 @@ func (pd PanelDownload) ToPanelDownloadView() PanelDownloadView {
 }
 
 type ConfluenceStoreStages struct {
-	ParentPageExistsCheck   Result
-	CreateMissingParentPage Result
-	DataStorePageCreation   Result
-	UploadSnapshots         Result
+	TopPageExistsCheck    Result
+	DataStorePageCreation Result
+	SnapshotUploads       map[string]SnapshotUpload
 }
 
 func (c ConfluenceStoreStages) ConfluenceStoreStagesView() ConfluenceStoreStagesView {
 	return ConfluenceStoreStagesView{
-		ParentPageExistsCheck:   c.ParentPageExistsCheck,
-		CreateMissingParentPage: c.CreateMissingParentPage,
-		DataStorePageCreation:   c.DataStorePageCreation,
-		UploadSnapshots:         c.UploadSnapshots,
+		ParentPageExistsCheck: c.TopPageExistsCheck,
+		DataStorePageCreation: c.DataStorePageCreation,
+		SnapshotUploads:       toSnapshotUploadsViews(c.SnapshotUploads),
 	}
 }
 
-func NewConfluenceStoreStages() ConfluenceStoreStages {
+func toSnapshotUploadsViews(uploads map[string]SnapshotUpload) map[string]SnapshotUploadView {
+	m := make(map[string]SnapshotUploadView, len(uploads))
+	for i, v := range uploads {
+		m[i] = v.ToSnapshotUploadView()
+	}
+
+	return m
+}
+
+type SnapshotUpload struct {
+	PanelPageExistsCheck    Result
+	GetCurrentAttachmentIDs Result
+	UploadImageToPage       Result
+	GetPageContents         Result
+	UpdatePageContents      Result
+}
+
+func (s SnapshotUpload) ToSnapshotUploadView() SnapshotUploadView {
+	return SnapshotUploadView{
+		PanelPageExistsCheck:    s.PanelPageExistsCheck,
+		GetCurrentAttachmentIDs: s.GetCurrentAttachmentIDs,
+		UploadImageToPage:       s.UploadImageToPage,
+		GetPageContents:         s.GetPageContents,
+		UpdatePageContents:      s.UpdatePageContents,
+	}
+}
+
+func NewConfluenceStoreStages(uploads int) ConfluenceStoreStages {
 	return ConfluenceStoreStages{
-		ParentPageExistsCheck:   NewNotExecutedResult(),
-		CreateMissingParentPage: NewNotExecutedResult(),
-		DataStorePageCreation:   NewNotExecutedResult(),
-		UploadSnapshots:         NewNotExecutedResult(),
+		TopPageExistsCheck:    NewNotExecutedResult(),
+		DataStorePageCreation: NewNotExecutedResult(),
+		SnapshotUploads:       make(map[string]SnapshotUpload, uploads),
 	}
 }
 
