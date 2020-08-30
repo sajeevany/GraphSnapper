@@ -194,7 +194,7 @@ func NewConfluenceStoreStages(uploads int) *ConfluenceStoreStages {
 	return &ConfluenceStoreStages{
 		TopPageExistsCheck:    NewNotExecutedResult(),
 		DashboardPageCreation: NewNotExecutedResult(),
-		SnapshotUploads:       make(map[string]SnapshotUpload, uploads),
+		SnapshotUploads:       make(map[string]*SnapshotUpload, uploads),
 	}
 }
 
