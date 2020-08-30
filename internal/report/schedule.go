@@ -85,7 +85,7 @@ func (r *GrafanaDashboardReport) Finalize() {
 
 type Stages struct {
 	GrafanaSnapshotStages *GrafanaDBSnapshotStages
-	ConfluenceStoreStages map[string]ConfluenceStoreStages
+	ConfluenceStoreStages map[string]*ConfluenceStoreStages
 }
 
 func (s Stages) toStagesView() GrafanaStagesView {
@@ -151,19 +151,19 @@ func (pd PanelDownload) ToPanelDownloadView() PanelDownloadView {
 
 type ConfluenceStoreStages struct {
 	TopPageExistsCheck    Result
-	DataStorePageCreation Result
-	SnapshotUploads       map[string]SnapshotUpload
+	DashboardPageCreation Result
+	SnapshotUploads       map[string]*SnapshotUpload
 }
 
 func (c ConfluenceStoreStages) ConfluenceStoreStagesView() ConfluenceStoreStagesView {
 	return ConfluenceStoreStagesView{
 		ParentPageExistsCheck: c.TopPageExistsCheck,
-		DataStorePageCreation: c.DataStorePageCreation,
+		DataStorePageCreation: c.DashboardPageCreation,
 		SnapshotUploads:       toSnapshotUploadsViews(c.SnapshotUploads),
 	}
 }
 
-func toSnapshotUploadsViews(uploads map[string]SnapshotUpload) map[string]SnapshotUploadView {
+func toSnapshotUploadsViews(uploads map[string]*SnapshotUpload) map[string]SnapshotUploadView {
 	m := make(map[string]SnapshotUploadView, len(uploads))
 	for i, v := range uploads {
 		m[i] = v.ToSnapshotUploadView()
@@ -190,10 +190,10 @@ func (s SnapshotUpload) ToSnapshotUploadView() SnapshotUploadView {
 	}
 }
 
-func NewConfluenceStoreStages(uploads int) ConfluenceStoreStages {
-	return ConfluenceStoreStages{
+func NewConfluenceStoreStages(uploads int) *ConfluenceStoreStages {
+	return &ConfluenceStoreStages{
 		TopPageExistsCheck:    NewNotExecutedResult(),
-		DataStorePageCreation: NewNotExecutedResult(),
+		DashboardPageCreation: NewNotExecutedResult(),
 		SnapshotUploads:       make(map[string]SnapshotUpload, uploads),
 	}
 }

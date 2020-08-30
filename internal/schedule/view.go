@@ -3,6 +3,8 @@ package schedule
 import (
 	"github.com/sajeevany/graph-snapper/internal/common"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/genproto/googleapis/type/timeofday"
+	"time"
 )
 
 type ScheduleV1 struct {
@@ -60,6 +62,7 @@ func (p ConfluencePage) GetFields() logrus.Fields {
 }
 
 type RecordDashboardCadence struct {
-	TriggerCron string
-	Ranges      DashBoardTimeRanges
+	TriggerCron          string
+	EndTimeToday         timeofday.TimeOfDay
+	DurationUntilEndTime time.Duration
 }
